@@ -1,0 +1,48 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "actions": "Actions",
+    "status": "Status",
+    "priority": "Priority",
+    "category": "Category",
+    "tags": "Tags",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at"
+  },
+  "auth": {
+    "login": "Sign in",
+    "register": "Sign up",
+    "logout": "Sign out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "confirmPassword": "Confirm password",
+    "fullName": "Full name"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "tickets": "Tickets",
+    "clients": "Clients",
+    "users": "Users",
+    "knowledgeBase": "Knowledge Base",
+    "reports": "Reports",
+    "settings": "Settings",
+    "integrations": "Integrations",
+    "ai": "Artificial Intelligence",
+    "sla": "SLA"
+  }
+}
