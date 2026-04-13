@@ -14,6 +14,9 @@ import {
   Tag,
   Trash2,
   Loader2,
+  Pencil,
+  Check,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -42,7 +45,8 @@ import { TicketComments } from './ticket-comments'
 import { TicketHistory } from './ticket-history'
 import { TicketAIPanel } from './ticket-ai-panel'
 import { TicketExternalLinks } from './ticket-external-links'
-import { RichTextViewer } from '@/components/shared/rich-text-editor'
+import { RichTextEditor, RichTextViewer } from '@/components/shared/rich-text-editor'
+import { Input } from '@/components/ui/input'
 import { useUser } from '@/hooks/use-user'
 import type {
   Ticket,
@@ -60,6 +64,11 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
   const user = useUser()
   const queryClient = useQueryClient()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [editTitle, setEditTitle] = useState(initialTicket.title)
+  const [editingDescription, setEditingDescription] = useState(false)
+  const [editDescriptionHtml, setEditDescriptionHtml] = useState(initialTicket.description_html ?? '')
+  const [editDescription, setEditDescription] = useState(initialTicket.description ?? '')
 
   // Refetch ticket data to keep updated
   const { data: ticket } = useQuery({
@@ -167,7 +176,62 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
             <TicketStatusBadge status={ticket.status} />
             <TicketPriorityBadge priority={ticket.priority} />
           </div>
-          <h1 className="mt-1 text-lg font-semibold">{ticket.title}</h1>
+          {editingTitle ? (
+            <div className="mt-1 flex items-center gap-1.5">
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="h-8 text-base font-semibold"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && editTitle.trim()) {
+                    updateTicket.mutate({ title: editTitle.trim() })
+                    setEditingTitle(false)
+                  }
+                  if (e.key === 'Escape') {
+                    setEditTitle(ticket.title)
+                    setEditingTitle(false)
+                  }
+                }}
+              />
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-7 shrink-0"
+                disabled={!editTitle.trim() || updateTicket.isPending}
+                onClick={() => {
+                  if (editTitle.trim()) {
+                    updateTicket.mutate({ title: editTitle.trim() })
+                    setEditingTitle(false)
+                  }
+                }}
+              >
+                <Check className="size-3.5" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-7 shrink-0"
+                onClick={() => { setEditTitle(ticket.title); setEditingTitle(false) }}
+              >
+                <X className="size-3.5" />
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-1 flex items-center gap-1">
+              <h1 className="text-lg font-semibold">{ticket.title}</h1>
+              {user.role === 'super_admin' && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-6 opacity-40 hover:opacity-100"
+                  onClick={() => { setEditTitle(ticket.title); setEditingTitle(true) }}
+                >
+                  <Pencil className="size-3" />
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         {user.isInternal && (
           <Button
@@ -192,8 +256,52 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
         <div className="space-y-6">
           {/* Description */}
           <div className="rounded-lg border border-border bg-card p-4">
-            <h3 className="text-sm font-semibold mb-2">Descrição</h3>
-            {ticket.description_html ? (
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold">Descrição</h3>
+              {user.role === 'super_admin' && !editingDescription && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs gap-1 opacity-60 hover:opacity-100"
+                  onClick={() => {
+                    setEditDescription(ticket.description ?? '')
+                    setEditDescriptionHtml(ticket.description_html ?? '')
+                    setEditingDescription(true)
+                  }}
+                >
+                  <Pencil className="size-3" />
+                  Editar
+                </Button>
+              )}
+            </div>
+            {editingDescription ? (
+              <div className="space-y-2">
+                <RichTextEditor
+                  content={editDescriptionHtml}
+                  onChange={(html, text) => { setEditDescriptionHtml(html); setEditDescription(text) }}
+                  minHeight="120px"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingDescription(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={updateTicket.isPending}
+                    onClick={() => {
+                      updateTicket.mutate({ description: editDescription, description_html: editDescriptionHtml })
+                      setEditingDescription(false)
+                    }}
+                  >
+                    {updateTicket.isPending ? <Loader2 className="size-3.5 animate-spin" /> : 'Salvar'}
+                  </Button>
+                </div>
+              </div>
+            ) : ticket.description_html ? (
               <RichTextViewer content={ticket.description_html} />
             ) : (
               <div className="prose prose-sm max-w-none text-sm whitespace-pre-wrap">
@@ -270,7 +378,9 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
                 onValueChange={handleStatusChange}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue>
+                    {STATUS_CONFIG[ticket.status as TicketStatus]?.label ?? ticket.status}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {(Object.keys(STATUS_CONFIG) as TicketStatus[]).map(
@@ -294,7 +404,9 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
                 onValueChange={handlePriorityChange}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue>
+                    {PRIORITY_CONFIG[ticket.priority as TicketPriority]?.label ?? ticket.priority}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {(Object.keys(PRIORITY_CONFIG) as TicketPriority[]).map(
@@ -319,7 +431,11 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
                   onValueChange={handleAssigneeChange}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Não atribuído" />
+                    <SelectValue placeholder="Não atribuído">
+                      {ticket.assigned_to
+                        ? (agents?.find((a) => a.id === ticket.assigned_to)?.full_name ?? 'Não atribuído')
+                        : 'Não atribuído'}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">Não atribuído</SelectItem>

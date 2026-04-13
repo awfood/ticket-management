@@ -17,6 +17,7 @@ import {
   Reply,
   CornerDownRight,
   X,
+  Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { FileUpload } from '@/components/shared/file-upload'
 import { RichTextEditor, RichTextViewer } from '@/components/shared/rich-text-editor'
 import { DevPromptDialog } from './dev-prompt-dialog'
@@ -74,7 +85,9 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
   const [generatingDevPrompt, setGeneratingDevPrompt] = useState(false)
   const [devPromptDialogOpen, setDevPromptDialogOpen] = useState(false)
   const hasDevPermission = user.permissions.includes('ai.dev_prompt') || user.role === 'super_admin'
+  const isSuperAdmin = user.role === 'super_admin'
   const editorRef = React.useRef<HTMLDivElement>(null)
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
   const [commentAnalysis, setCommentAnalysis] = useState<{
     comment_id: string
     comment_analysis: {
@@ -124,6 +137,27 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
       setBodyHtml('')
       setIsInternal(false)
       setReplyingTo(null)
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    },
+  })
+
+  const deleteComment = useMutation({
+    mutationFn: async (commentId: string) => {
+      const res = await fetch(`/api/tickets/${ticketId}/comments/${commentId}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(
+          (err as { error?: string }).error ?? 'Erro ao excluir comentario'
+        )
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket-comments', ticketId] })
+      toast.success('Comentario excluido.')
     },
     onError: (err: Error) => {
       toast.error(err.message)
@@ -416,6 +450,18 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
                           Gerar Prompt Dev
                         </Button>
                       )}
+                      {isSuperAdmin && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 ml-auto"
+                          onClick={() => setCommentToDelete(comment.id)}
+                          disabled={deleteComment.isPending}
+                        >
+                          <Trash2 className="size-3" />
+                          Excluir
+                        </Button>
+                      )}
 
                       {/* Inline analysis result */}
                       {commentAnalysis?.comment_id === comment.id && (
@@ -550,6 +596,36 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
           </Button>
         </div>
       </form>
+
+      {/* Dialog de confirmacao de exclusao de comentario */}
+      <AlertDialog
+        open={commentToDelete !== null}
+        onOpenChange={(open) => { if (!open) setCommentToDelete(null) }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir comentário?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O comentário será excluído permanentemente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (commentToDelete) {
+                  deleteComment.mutate(commentToDelete)
+                  setCommentToDelete(null)
+                }
+              }}
+            >
+              <Trash2 className="size-4" />
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog de configuracao do Prompt Dev */}
       <DevPromptDialog

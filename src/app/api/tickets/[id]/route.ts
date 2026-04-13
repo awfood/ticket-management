@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 export async function GET(
   _request: NextRequest,
@@ -151,7 +151,10 @@ export async function PATCH(
 
     updates.updated_at = new Date().toISOString()
 
-    const { data: updatedTicket, error: updateError } = await supabase
+    // Use service client to bypass RLS on update + history insert
+    const serviceClient = await createServiceClient()
+
+    const { data: updatedTicket, error: updateError } = await serviceClient
       .from('tickets')
       .update(updates)
       .eq('id', id)
@@ -170,7 +173,7 @@ export async function PATCH(
 
     // Create history entries
     if (historyEntries.length > 0) {
-      await supabase.from('ticket_history').insert(historyEntries)
+      await serviceClient.from('ticket_history').insert(historyEntries)
     }
 
     // Send email notification on status change (fire-and-forget)
