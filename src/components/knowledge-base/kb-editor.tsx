@@ -29,11 +29,21 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TagInput } from '@/components/shared/tag-input'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import type { KnowledgeBaseArticle } from '@/types'
 
 const articleSchema = z.object({
-  title: z.string().min(3, 'Titulo deve ter pelo menos 3 caracteres'),
-  content: z.string().min(10, 'Conteudo deve ter pelo menos 10 caracteres'),
+  title: z.string().min(3, 'O título deve ter pelo menos 3 caracteres'),
+  content: z.string().min(10, 'O conteúdo deve ter pelo menos 10 caracteres'),
   content_html: z.string().nullable().optional(),
   category: z.string().optional(),
   tags: z.array(z.string()),
@@ -44,8 +54,8 @@ type ArticleFormData = z.infer<typeof articleSchema>
 
 const CATEGORIES = [
   { value: 'geral', label: 'Primeiros Passos' },
-  { value: 'cardapio', label: 'Cardapio e Produtos' },
-  { value: 'integracao', label: 'Integracoes' },
+  { value: 'cardapio', label: 'Cardápio e Produtos' },
+  { value: 'integracao', label: 'Integrações' },
   { value: 'pdv', label: 'PDV e Vendas' },
   { value: 'financeiro', label: 'Financeiro' },
   { value: 'fiscal', label: 'Fiscal (NFC-e / NF-e)' },
@@ -53,10 +63,10 @@ const CATEGORIES = [
   { value: 'estoque', label: 'Estoque' },
   { value: 'delivery', label: 'Delivery' },
   { value: 'cadastros', label: 'Cadastros' },
-  { value: 'promocoes', label: 'Promocoes' },
-  { value: 'relatorios', label: 'Relatorios' },
-  { value: 'configuracao', label: 'Configuracoes' },
-  { value: 'troubleshooting', label: 'Solucao de Problemas' },
+  { value: 'promocoes', label: 'Promoções' },
+  { value: 'relatorios', label: 'Relatórios' },
+  { value: 'configuracao', label: 'Configurações' },
+  { value: 'troubleshooting', label: 'Solução de Problemas' },
   { value: 'pedidos', label: 'Pedidos' },
 ]
 
@@ -68,6 +78,7 @@ export function KBEditor({ article }: KBEditorProps) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [preview, setPreview] = useState(false)
 
   const isEditing = !!article
@@ -140,7 +151,7 @@ export function KBEditor({ article }: KBEditorProps) {
 
       const saved = await res.json()
       toast.success(
-        isEditing ? 'Artigo atualizado' : 'Artigo criado'
+        isEditing ? 'Artigo atualizado com sucesso.' : 'Artigo criado e salvo.'
       )
 
       if (!isEditing) {
@@ -157,7 +168,6 @@ export function KBEditor({ article }: KBEditorProps) {
 
   const handleDelete = async () => {
     if (!article) return
-    if (!confirm('Tem certeza que deseja excluir este artigo?')) return
 
     setDeleting(true)
     try {
@@ -166,17 +176,18 @@ export function KBEditor({ article }: KBEditorProps) {
       })
 
       if (!res.ok) {
-        throw new Error('Erro ao excluir artigo')
+        throw new Error('Não foi possível excluir o artigo. Verifique sua conexão e tente novamente.')
       }
 
-      toast.success('Artigo excluido')
+      toast.success('Artigo excluído.')
       router.push('/knowledge-base')
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Erro ao excluir artigo'
+        err instanceof Error ? err.message : 'Não foi possível excluir o artigo.'
       toast.error(message)
     } finally {
       setDeleting(false)
+      setDeleteDialogOpen(false)
     }
   }
 
@@ -216,7 +227,7 @@ export function KBEditor({ article }: KBEditorProps) {
             <Button
               variant="destructive"
               size="sm"
-              onClick={handleDelete}
+              onClick={() => setDeleteDialogOpen(true)}
               disabled={deleting}
             >
               {deleting ? (
@@ -230,7 +241,7 @@ export function KBEditor({ article }: KBEditorProps) {
                   data-icon="inline-start"
                 />
               )}
-              Excluir
+              Excluir artigo
             </Button>
           )}
 
@@ -257,10 +268,10 @@ export function KBEditor({ article }: KBEditorProps) {
         <div className="space-y-4">
           {/* Title */}
           <div className="space-y-1.5">
-            <Label htmlFor="title">Titulo</Label>
+            <Label htmlFor="title">Título</Label>
             <Input
               id="title"
-              placeholder="Titulo do artigo"
+              placeholder="Ex.: Como configurar integração com iFood"
               {...register('title')}
               className={errors.title ? 'border-red-500' : ''}
             />
@@ -275,28 +286,28 @@ export function KBEditor({ article }: KBEditorProps) {
           {preview ? (
             <Card>
               <CardHeader>
-                <CardTitle>{watchTitle || 'Sem titulo'}</CardTitle>
+                <CardTitle>{watchTitle || '(sem título)'}</CardTitle>
               </CardHeader>
               <CardContent>
                 {watch('content_html') ? (
                   <RichTextViewer content={watch('content_html') ?? null} />
                 ) : (
                   <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap">
-                    {watchContent || 'Sem conteudo'}
+                    {watchContent || '(sem conteúdo)'}
                   </div>
                 )}
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-1.5">
-              <Label>Conteudo</Label>
+              <Label>Conteúdo</Label>
               <RichTextEditor
                 content={initialHtml || article?.content || ''}
                 onChange={(html, text) => {
                   setValue('content', text, { shouldValidate: true })
                   setValue('content_html', html)
                 }}
-                placeholder="Escreva o conteudo do artigo..."
+                placeholder="Escreva o conteúdo do artigo..."
                 minHeight="400px"
                 className={errors.content ? 'border-red-500' : ''}
               />
@@ -326,8 +337,8 @@ export function KBEditor({ article }: KBEditorProps) {
               </div>
               <p className="text-[10px] text-muted-foreground mt-1">
                 {watchPublished
-                  ? 'Visivel para todos'
-                  : 'Apenas rascunho (interno)'}
+                  ? 'Visível para todos os usuários'
+                  : 'Rascunho — visível apenas internamente'}
               </p>
             </CardContent>
           </Card>
@@ -341,7 +352,7 @@ export function KBEditor({ article }: KBEditorProps) {
                 onValueChange={(v) => setValue('category', v ?? '')}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecionar categoria" />
+                  <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((cat) => (
@@ -367,6 +378,27 @@ export function KBEditor({ article }: KBEditorProps) {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir artigo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O artigo <strong>&ldquo;{watchTitle}&rdquo;</strong> será excluído permanentemente e não poderá ser recuperado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleDelete}
+            >
+              <Trash2 className="size-4" />
+              Excluir artigo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -39,7 +39,7 @@ const INTERNAL_ROLES: { value: UserRole; label: string }[] = [
 ]
 
 const ORG_ROLES: { value: UserRole; label: string }[] = [
-  { value: 'org_admin', label: 'Administrador da Organizacao' },
+  { value: 'org_admin', label: 'Administrador da Organização' },
   { value: 'org_member', label: 'Membro' },
 ]
 
@@ -102,7 +102,7 @@ export function InviteMemberDialog({
     mutationFn: async (values: InviteFormValues) => {
       const targetOrgId = context === 'internal' ? internalOrgId : orgId
       if (!targetOrgId) {
-        throw new Error('Organizacao nao encontrada')
+        throw new Error('Organização não encontrada')
       }
       const res = await fetch(`/api/organizations/${targetOrgId}/members`, {
         method: 'POST',
@@ -134,7 +134,7 @@ export function InviteMemberDialog({
 
   const onSubmit = (values: InviteFormValues) => {
     if (!values.email || !values.email.includes('@')) {
-      toast.error('Informe um email valido')
+      toast.error('Informe um email válido')
       return
     }
     inviteMutation.mutate(values)
@@ -151,8 +151,8 @@ export function InviteMemberDialog({
           </DialogTitle>
           <DialogDescription>
             {context === 'internal'
-              ? 'Adicione um novo membro a equipe interna AWFood'
-              : 'Adicione um membro a esta organizacao. Se o usuario nao existir, um convite sera enviado por email.'}
+              ? 'Adicione um novo membro à equipe interna AWFood'
+              : 'Adicione um membro a esta organização. Se o usuário não existir, um convite será enviado por email.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -165,13 +165,13 @@ export function InviteMemberDialog({
               <Input
                 id="invite-email"
                 type="email"
-                placeholder="usuario@empresa.com"
+                placeholder="usuário@empresa.com"
                 className="pl-8"
                 {...register('email', {
-                  required: 'Email e obrigatorio',
+                  required: 'Email é obrigatório',
                   pattern: {
                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Email invalido',
+                    message: 'Email inválido',
                   },
                 })}
                 aria-invalid={!!errors.email}
@@ -187,24 +187,24 @@ export function InviteMemberDialog({
             <Label htmlFor="invite-name">Nome completo (opcional)</Label>
             <Input
               id="invite-name"
-              placeholder="Nome do usuario"
+              placeholder="Nome do usuário"
               {...register('full_name')}
             />
             <p className="text-xs text-muted-foreground">
-              Se o usuario ja existir, o nome cadastrado sera mantido
+              Se o usuário já existir, o nome cadastrado será mantido
             </p>
           </div>
 
           {/* Role */}
           <div className="space-y-1.5">
-            <Label>Permissao</Label>
+            <Label>Permissão</Label>
             <Controller
               name="role"
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione a permissao" />
+                    <SelectValue placeholder="Selecione a permissão" />
                   </SelectTrigger>
                   <SelectContent>
                     {roles.map((r) => (

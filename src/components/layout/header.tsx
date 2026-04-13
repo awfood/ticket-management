@@ -97,13 +97,13 @@ export function Header({ title, user, breadcrumbs }: HeaderProps) {
           <Input
             name="search"
             placeholder="Buscar tickets..."
-            className="pl-8 h-8 text-sm"
+            className="pl-8 h-9 text-sm"
           />
         </div>
       </form>
 
       {/* Right: actions */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         <NotificationBell userId={user.id} />
 
         <DropdownMenu>
@@ -147,7 +147,7 @@ export function Header({ title, user, breadcrumbs }: HeaderProps) {
                 onClick={() => router.push('/settings')}
               >
                 <Settings className="size-4" />
-                Configuracoes
+                Configurações
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

@@ -81,13 +81,13 @@ export function DashboardHome() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            Visao geral do sistema de tickets
+            Visão geral dos últimos 30 dias
           </p>
         </div>
         <Button
@@ -106,7 +106,7 @@ export function DashboardHome() {
 
       {/* Stats Cards */}
       {statsLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card size="sm" key={i}>
               <CardContent className="flex items-center gap-3">
@@ -120,37 +120,27 @@ export function DashboardHome() {
           ))}
         </div>
       ) : stats ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Abertos"
-            value={stats.total_open}
-            icon={Inbox}
-            color="blue"
-          />
-          <StatCard
-            title="Em Progresso"
-            value={stats.total_in_progress}
-            icon={Clock}
-            color="yellow"
-          />
-          <StatCard
-            title="Resolvidos Hoje"
-            value={stats.total_resolved_today}
-            icon={CheckCircle2}
-            color="green"
-          />
-          <StatCard
-            title="SLA Violado"
-            value={stats.total_sla_breach}
-            icon={AlertTriangle}
-            color="red"
-          />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {([
+            { title: 'Abertos', value: stats.total_open, icon: Inbox, color: 'blue' },
+            { title: 'Em Progresso', value: stats.total_in_progress, icon: Clock, color: 'yellow' },
+            { title: 'Resolvidos Hoje', value: stats.total_resolved_today, icon: CheckCircle2, color: 'green' },
+            { title: 'Prazo Excedido', value: stats.total_sla_breach, icon: AlertTriangle, color: 'red' },
+          ] as const).map((card, i) => (
+            <div
+              key={card.title}
+              className="animate-slide-up-fade"
+              style={{ animationDelay: `${i * 55}ms` }}
+            >
+              <StatCard {...card} />
+            </div>
+          ))}
         </div>
       ) : null}
 
       {/* Charts Grid */}
       {statsLoading ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
@@ -163,7 +153,7 @@ export function DashboardHome() {
           ))}
         </div>
       ) : stats ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <TicketsByStatusChart data={stats.tickets_by_status} />
           <TicketsByPriorityChart data={stats.tickets_by_priority} />
           <TicketsOverTimeChart data={stats.tickets_over_time} />
@@ -173,35 +163,35 @@ export function DashboardHome() {
 
       {/* KPI Row */}
       {stats && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <StatCard
-            title="Tempo Medio 1a Resposta"
-            value={`${stats.avg_first_response_hours}h`}
-            icon={Clock}
-            color="purple"
-          />
-          <StatCard
-            title="Tempo Medio Resolucao"
-            value={`${stats.avg_resolution_hours}h`}
-            icon={CheckCircle2}
-            color="gray"
-          />
-          <StatCard
-            title="Conformidade SLA"
-            value={`${stats.sla_compliance_rate}%`}
-            icon={AlertTriangle}
-            color={stats.sla_compliance_rate >= 90 ? 'green' : 'red'}
-          />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {([
+            { title: 'Tempo Médio 1ª Resposta', value: `${stats.avg_first_response_hours}h`, icon: Clock, color: 'purple' },
+            { title: 'Tempo Médio de Resolução', value: `${stats.avg_resolution_hours}h`, icon: CheckCircle2, color: 'gray' },
+            {
+              title: 'Conformidade de Prazo',
+              value: `${stats.sla_compliance_rate}%`,
+              icon: AlertTriangle,
+              color: stats.sla_compliance_rate >= 90 ? ('green' as const) : ('red' as const),
+            },
+          ] as const).map((card, i) => (
+            <div
+              key={card.title}
+              className="animate-slide-up-fade"
+              style={{ animationDelay: `${i * 55}ms` }}
+            >
+              <StatCard {...card} />
+            </div>
+          ))}
         </div>
       )}
 
       {/* Bottom section: Unassigned + SLA Alerts */}
       {user.isInternal && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Unassigned Tickets */}
           <Card>
             <CardHeader>
-              <CardTitle>Tickets Nao Atribuidos</CardTitle>
+              <CardTitle>Tickets Não Atribuídos</CardTitle>
             </CardHeader>
             <CardContent>
               {unassignedLoading ? (
@@ -212,7 +202,7 @@ export function DashboardHome() {
                 </div>
               ) : !unassigned || unassigned.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">
-                  Nenhum ticket sem atribuicao
+                  Todos os tickets abertos estão atribuídos.
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -254,10 +244,11 @@ export function DashboardHome() {
                   ))}
                 </div>
               ) : !slaAlerts || slaAlerts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-4 text-center">
+                <div className="flex flex-col items-center justify-center py-4 text-center animate-slide-up-fade">
                   <CheckCircle2 className="size-8 text-green-500 mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Nenhuma violacao de SLA ativa
+                  <p className="text-sm font-medium text-green-700 dark:text-green-400">Tudo em dia.</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Nenhum ticket com prazo excedido.
                   </p>
                 </div>
               ) : (

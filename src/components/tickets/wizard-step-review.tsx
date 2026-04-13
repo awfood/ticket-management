@@ -20,18 +20,18 @@ interface WizardStepReviewProps {
 
 const PRIORITY_MAP: Record<string, { label: string; className: string }> = {
   low: { label: 'Baixa', className: 'bg-muted text-muted-foreground' },
-  medium: { label: 'Media', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  medium: { label: 'Média', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
   high: { label: 'Alta', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-  critical: { label: 'Critica', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  critical: { label: 'Crítica', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
 }
 
 const CATEGORY_MAP: Record<string, string> = {
   bug: 'Bug',
-  feature_request: 'Solicitacao de recurso',
+  feature_request: 'Solicitação de recurso',
   support: 'Suporte',
-  billing: 'Cobranca',
-  integration: 'Integracao',
-  configuration: 'Configuracao',
+  billing: 'Cobrança',
+  integration: 'Integração',
+  configuration: 'Configuração',
 }
 
 const SERVICE_MAP: Record<string, string> = {
@@ -43,15 +43,15 @@ const SERVICE_MAP: Record<string, string> = {
 }
 
 const ENVIRONMENT_MAP: Record<string, string> = {
-  production: 'Producao',
+  production: 'Produção',
   staging: 'Staging',
   development: 'Desenvolvimento',
 }
 
 const IMPACT_MAP: Record<string, string> = {
-  single_user: 'Um usuario',
-  multiple_users: 'Varios usuarios',
-  all_users: 'Todos os usuarios',
+  single_user: 'Um usuário',
+  multiple_users: 'Vários usuários',
+  all_users: 'Todos os usuários',
   system_wide: 'Sistema inteiro',
 }
 
@@ -65,9 +65,9 @@ export function WizardStepReview({ data, isSubmitting, onSubmit }: WizardStepRev
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Revisao do ticket</h2>
+        <h2 className="text-lg font-semibold text-foreground">Revisão do ticket</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Confira as informacoes antes de criar o ticket.
+          Confira as informações antes de criar o ticket.
         </p>
       </div>
 
@@ -85,7 +85,7 @@ export function WizardStepReview({ data, isSubmitting, onSubmit }: WizardStepRev
         {/* Title and description */}
         <div className="px-6 py-5 space-y-4">
           <h3 className="text-xl font-bold text-foreground leading-tight">
-            {data.title || '(Sem titulo)'}
+            {data.title || '(Sem título)'}
           </h3>
 
           {data.descriptionHtml ? (
@@ -95,7 +95,7 @@ export function WizardStepReview({ data, isSubmitting, onSubmit }: WizardStepRev
               {data.description}
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground italic">(Sem descricao)</p>
+            <p className="text-sm text-muted-foreground italic">(Sem descrição)</p>
           )}
         </div>
 
@@ -250,10 +250,10 @@ export function WizardStepReview({ data, isSubmitting, onSubmit }: WizardStepRev
       {(!data.title || !data.orgId) && (
         <p className="text-center text-xs text-destructive">
           {!data.title && !data.orgId
-            ? 'Titulo e organizacao sao obrigatorios.'
+            ? 'Título e organização são obrigatórios.'
             : !data.title
-            ? 'Titulo e obrigatorio.'
-            : 'Organizacao e obrigatoria.'}
+            ? 'Título é obrigatório.'
+            : 'Organização é obrigatória.'}
         </p>
       )}
     </div>

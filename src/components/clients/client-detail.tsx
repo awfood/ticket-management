@@ -103,9 +103,9 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
-  critical: 'Critico',
+  critical: 'Crítico',
   high: 'Alta',
-  medium: 'Media',
+  medium: 'Média',
   low: 'Baixa',
 }
 
@@ -150,7 +150,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
     queryKey: ['organization', orgId],
     queryFn: async () => {
       const res = await fetch(`/api/organizations/${orgId}`)
-      if (!res.ok) throw new Error('Erro ao carregar organizacao')
+      if (!res.ok) throw new Error('Erro ao carregar a organização. Tente recarregar a página.')
       return res.json()
     },
   })
@@ -164,12 +164,12 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error ?? 'Erro ao remover membro')
+        throw new Error(err.error ?? 'Não foi possível remover o membro. Verifique sua conexão.')
       }
       return res.json()
     },
     onSuccess: () => {
-      toast.success('Membro removido com sucesso')
+      toast.success('Membro removido da organização.')
       queryClient.invalidateQueries({ queryKey: ['organization', orgId] })
       setRemoveMember(null)
     },
@@ -187,12 +187,12 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error ?? 'Erro ao alterar role')
+        throw new Error(err.error ?? 'Não foi possível alterar a função do membro.')
       }
       return res.json()
     },
     onSuccess: () => {
-      toast.success('Permissao alterada com sucesso')
+      toast.success('Função do membro atualizada.')
       queryClient.invalidateQueries({ queryKey: ['organization', orgId] })
     },
     onError: (err: Error) => {
@@ -245,7 +245,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
       {/* Tabs */}
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview">Visao Geral</TabsTrigger>
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="members">
             Membros ({org?.members_count ?? 0})
           </TabsTrigger>
@@ -301,7 +301,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
           {org?.parent && (
             <Card className="mt-4 p-4">
               <p className="text-xs font-medium text-muted-foreground">
-                Organizacao Pai
+                Organização Pai
               </p>
               <Link
                 href={`/clients/${org.parent.id}`}
@@ -316,7 +316,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
           {org?.settings && Object.keys(org.settings).length > 0 && (
             <Card className="mt-4 p-4">
               <p className="text-xs font-medium text-muted-foreground mb-2">
-                Configuracoes
+                Configurações
               </p>
               <pre className="text-xs text-muted-foreground bg-muted rounded-md p-2 overflow-auto">
                 {JSON.stringify(org.settings, null, 2)}
@@ -329,7 +329,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
         <TabsContent value="members">
           <Card>
             <div className="flex items-center justify-between p-4 pb-2">
-              <h3 className="text-sm font-medium">Membros da organizacao</h3>
+              <h3 className="text-sm font-medium">Membros da organização</h3>
               {user.isInternal && (
                 <Button size="sm" onClick={() => setInviteDialogOpen(true)}>
                   <Users className="size-3.5" />
@@ -342,7 +342,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Permissao</TableHead>
+                  <TableHead>Função</TableHead>
                   <TableHead>Entrada</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
@@ -352,7 +352,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
                   <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
                       <p className="text-sm text-muted-foreground">
-                        Nenhum membro nesta organizacao
+                        Nenhum membro nesta organização. Use o botão acima para convidar.
                       </p>
                     </TableCell>
                   </TableRow>
@@ -454,7 +454,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
               <div className="p-4 pb-2">
                 <h3 className="text-sm font-medium">Sub-clientes</h3>
                 <p className="text-xs text-muted-foreground">
-                  Organizacoes vinculadas como sub-clientes desta whitelabel
+                  Organizações vinculadas como sub-clientes desta whitelabel
                 </p>
               </div>
               <Table>
@@ -470,7 +470,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
                     <TableRow>
                       <TableCell colSpan={3} className="h-24 text-center">
                         <p className="text-sm text-muted-foreground">
-                          Nenhum sub-cliente vinculado
+                          Nenhum sub-cliente vinculado ainda.
                         </p>
                       </TableCell>
                     </TableRow>
@@ -606,11 +606,10 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remover membro</AlertDialogTitle>
+            <AlertDialogTitle>Remover membro da organização?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja remover{' '}
-              <strong>{removeMember?.profile?.full_name ?? 'este membro'}</strong>{' '}
-              da organizacao? O acesso sera desativado imediatamente.
+              <strong>{removeMember?.profile?.full_name ?? 'Este membro'}</strong>{' '}
+              perderá acesso a todos os tickets e configurações desta organização imediatamente. Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -624,7 +623,7 @@ export function ClientDetailView({ orgId, initialOrg }: ClientDetailViewProps) {
               }}
             >
               <Trash2 className="size-4" />
-              Remover
+              Remover membro
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

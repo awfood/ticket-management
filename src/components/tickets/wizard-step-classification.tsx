@@ -29,18 +29,18 @@ interface WizardStepClassificationProps {
 
 const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
   { value: 'low', label: 'Baixa' },
-  { value: 'medium', label: 'Media' },
+  { value: 'medium', label: 'Média' },
   { value: 'high', label: 'Alta' },
-  { value: 'critical', label: 'Critica' },
+  { value: 'critical', label: 'Crítica' },
 ]
 
 const CATEGORY_OPTIONS: { value: TicketCategory; label: string }[] = [
   { value: 'bug', label: 'Bug' },
-  { value: 'feature_request', label: 'Solicitacao de recurso' },
+  { value: 'feature_request', label: 'Solicitação de recurso' },
   { value: 'support', label: 'Suporte' },
-  { value: 'billing', label: 'Cobranca' },
-  { value: 'integration', label: 'Integracao' },
-  { value: 'configuration', label: 'Configuracao' },
+  { value: 'billing', label: 'Cobrança' },
+  { value: 'integration', label: 'Integração' },
+  { value: 'configuration', label: 'Configuração' },
 ]
 
 const SERVICE_OPTIONS: { value: AffectedService; label: string }[] = [
@@ -52,15 +52,15 @@ const SERVICE_OPTIONS: { value: AffectedService; label: string }[] = [
 ]
 
 const ENVIRONMENT_OPTIONS = [
-  { value: 'production', label: 'Producao' },
+  { value: 'production', label: 'Produção' },
   { value: 'staging', label: 'Staging' },
   { value: 'development', label: 'Desenvolvimento' },
 ]
 
 const IMPACT_OPTIONS: { value: TicketImpact; label: string }[] = [
-  { value: 'single_user', label: 'Um usuario' },
-  { value: 'multiple_users', label: 'Varios usuarios' },
-  { value: 'all_users', label: 'Todos os usuarios' },
+  { value: 'single_user', label: 'Um usuário' },
+  { value: 'multiple_users', label: 'Vários usuários' },
+  { value: 'all_users', label: 'Todos os usuários' },
   { value: 'system_wide', label: 'Sistema inteiro' },
 ]
 
@@ -112,7 +112,7 @@ export function WizardStepClassification({ data, updateData, setValid }: WizardS
       <div>
         <h2 className="text-lg font-semibold text-foreground">Classifique o ticket</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Defina a prioridade, categoria e demais informacoes de classificacao.
+          Defina a prioridade, categoria e demais informações de classificação.
         </p>
       </div>
 
@@ -121,7 +121,7 @@ export function WizardStepClassification({ data, updateData, setValid }: WizardS
         {/* Organization */}
         <div className="space-y-1.5">
           <Label>
-            Organizacao <span className="text-destructive">*</span>
+            Organização <span className="text-destructive">*</span>
           </Label>
           <Select
             value={data.orgId}
@@ -140,7 +140,7 @@ export function WizardStepClassification({ data, updateData, setValid }: WizardS
           </Select>
           {orgsLoaded && organizations.length === 0 && (
             <p className="text-xs text-muted-foreground">
-              Nenhuma organizacao disponivel.
+              Nenhuma organização disponível.
             </p>
           )}
         </div>
@@ -190,7 +190,7 @@ export function WizardStepClassification({ data, updateData, setValid }: WizardS
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Affected Service */}
         <div className="space-y-1.5">
-          <Label>Servico afetado</Label>
+          <Label>Serviço afetado</Label>
           <Select
             value={data.affectedService}
             onValueChange={(val) => updateData({ affectedService: val ?? '' })}
@@ -289,7 +289,7 @@ export function WizardStepClassification({ data, updateData, setValid }: WizardS
             id="wizard-actual"
             value={data.actualBehavior}
             onChange={(e) => updateData({ actualBehavior: e.target.value })}
-            placeholder="O que esta acontecendo?"
+            placeholder="O que está acontecendo?"
             className="min-h-[80px]"
           />
         </div>

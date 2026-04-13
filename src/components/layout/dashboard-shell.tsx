@@ -64,7 +64,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               >
                 <Menu className="size-5" />
               </SheetTrigger>
-              <span className="text-sm font-semibold">AWFood Suporte</span>
+              <img src="/logo.png" alt="AWFood Suporte" width={100} height={26} className="h-6 w-auto object-contain" />
             </div>
 
             {/* Desktop header */}
@@ -74,12 +74,14 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
 
             {/* Main content */}
             <main className="flex-1 overflow-y-auto bg-muted/30 p-4 lg:p-6">
-              {children}
+              <div className="mx-auto max-w-[1400px]">
+                {children}
+              </div>
             </main>
           </div>
 
           <SheetContent side="left" className="w-64 p-0" showCloseButton={false}>
-            <SheetTitle className="sr-only">Menu de navegacao</SheetTitle>
+            <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
             <Sidebar user={sidebarUser} />
           </SheetContent>
         </Sheet>

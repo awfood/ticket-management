@@ -88,7 +88,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
-          <Button variant="ghost" size="icon" className="relative" aria-label="Notificacoes" />
+          <Button variant="ghost" size="icon" className="relative" aria-label="Notificações" />
         }
       >
         <Bell className="size-4" />
@@ -100,7 +100,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <PopoverHeader className="flex flex-row items-center justify-between p-3 pb-2">
-          <PopoverTitle>Notificacoes</PopoverTitle>
+          <PopoverTitle>Notificações</PopoverTitle>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -118,7 +118,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Bell className="size-8 text-muted-foreground/40 mb-2" />
               <p className="text-sm text-muted-foreground">
-                Nenhuma notificacao
+                Nenhuma notificação
               </p>
             </div>
           ) : (
@@ -180,7 +180,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center justify-center gap-1 rounded-md py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                Ver todas as notificacoes
+                Ver todas as notificações
               </Link>
             </div>
           </>

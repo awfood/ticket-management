@@ -9,9 +9,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-figtree);
   --font-mono: var(--font-mono);
-  --font-heading: var(--font-inter);
+  --font-heading: var(--font-bricolage);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -51,72 +51,72 @@
 }
 
 :root {
-  --background: oklch(0.99 0.005 50);
-  --foreground: oklch(0.17 0.012 50);
-  --card: oklch(0.995 0.003 50);
-  --card-foreground: oklch(0.17 0.012 50);
-  --popover: oklch(0.995 0.003 50);
-  --popover-foreground: oklch(0.17 0.012 50);
-  --primary: oklch(0.52 0.13 50);
-  --primary-foreground: oklch(0.98 0.005 50);
-  --secondary: oklch(0.955 0.012 50);
-  --secondary-foreground: oklch(0.22 0.012 50);
-  --muted: oklch(0.955 0.008 50);
-  --muted-foreground: oklch(0.50 0.02 50);
-  --accent: oklch(0.94 0.018 50);
-  --accent-foreground: oklch(0.22 0.012 50);
+  --background: oklch(0.99 0.003 295);
+  --foreground: oklch(0.17 0.010 295);
+  --card: oklch(1.00 0.002 295);
+  --card-foreground: oklch(0.17 0.010 295);
+  --popover: oklch(1.00 0.002 295);
+  --popover-foreground: oklch(0.17 0.010 295);
+  --primary: oklch(0.31 0.19 304);
+  --primary-foreground: oklch(0.99 0.003 295);
+  --secondary: oklch(0.955 0.010 295);
+  --secondary-foreground: oklch(0.22 0.010 295);
+  --muted: oklch(0.955 0.006 295);
+  --muted-foreground: oklch(0.50 0.018 295);
+  --accent: oklch(0.94 0.014 295);
+  --accent-foreground: oklch(0.22 0.010 295);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.91 0.012 50);
-  --input: oklch(0.91 0.012 50);
-  --ring: oklch(0.52 0.13 50);
-  --chart-1: oklch(0.62 0.155 50);
-  --chart-2: oklch(0.58 0.14 175);
-  --chart-3: oklch(0.56 0.155 290);
+  --border: oklch(0.91 0.010 295);
+  --input: oklch(0.91 0.010 295);
+  --ring: oklch(0.31 0.19 304);
+  --chart-1: oklch(0.31 0.19 304);
+  --chart-2: oklch(0.79 0.17 72);
+  --chart-3: oklch(0.58 0.14 175);
   --chart-4: oklch(0.62 0.15 145);
   --chart-5: oklch(0.58 0.13 25);
   --radius: 0.625rem;
-  --sidebar: oklch(0.97 0.01 50);
-  --sidebar-foreground: oklch(0.17 0.012 50);
-  --sidebar-primary: oklch(0.52 0.13 50);
-  --sidebar-primary-foreground: oklch(0.98 0.005 50);
-  --sidebar-accent: oklch(0.93 0.022 50);
-  --sidebar-accent-foreground: oklch(0.22 0.012 50);
-  --sidebar-border: oklch(0.90 0.015 50);
-  --sidebar-ring: oklch(0.52 0.13 50);
+  --sidebar: oklch(0.97 0.007 295);
+  --sidebar-foreground: oklch(0.17 0.010 295);
+  --sidebar-primary: oklch(0.31 0.19 304);
+  --sidebar-primary-foreground: oklch(0.99 0.003 295);
+  --sidebar-accent: oklch(0.93 0.014 295);
+  --sidebar-accent-foreground: oklch(0.22 0.010 295);
+  --sidebar-border: oklch(0.90 0.012 295);
+  --sidebar-ring: oklch(0.31 0.19 304);
 }
 
 .dark {
-  --background: oklch(0.16 0.01 50);
-  --foreground: oklch(0.96 0.005 50);
-  --card: oklch(0.21 0.012 50);
-  --card-foreground: oklch(0.96 0.005 50);
-  --popover: oklch(0.21 0.012 50);
-  --popover-foreground: oklch(0.96 0.005 50);
-  --primary: oklch(0.72 0.13 50);
-  --primary-foreground: oklch(0.17 0.012 50);
-  --secondary: oklch(0.27 0.015 50);
-  --secondary-foreground: oklch(0.96 0.005 50);
-  --muted: oklch(0.27 0.012 50);
-  --muted-foreground: oklch(0.68 0.02 50);
-  --accent: oklch(0.27 0.018 50);
-  --accent-foreground: oklch(0.96 0.005 50);
+  --background: oklch(0.16 0.010 295);
+  --foreground: oklch(0.96 0.004 295);
+  --card: oklch(0.21 0.012 295);
+  --card-foreground: oklch(0.96 0.004 295);
+  --popover: oklch(0.21 0.012 295);
+  --popover-foreground: oklch(0.96 0.004 295);
+  --primary: oklch(0.72 0.17 304);
+  --primary-foreground: oklch(0.17 0.010 295);
+  --secondary: oklch(0.27 0.012 295);
+  --secondary-foreground: oklch(0.96 0.004 295);
+  --muted: oklch(0.27 0.010 295);
+  --muted-foreground: oklch(0.68 0.016 295);
+  --accent: oklch(0.27 0.014 295);
+  --accent-foreground: oklch(0.96 0.004 295);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(0.96 0.005 50 / 12%);
-  --input: oklch(0.96 0.005 50 / 15%);
-  --ring: oklch(0.72 0.13 50);
-  --chart-1: oklch(0.72 0.13 50);
-  --chart-2: oklch(0.68 0.12 175);
-  --chart-3: oklch(0.66 0.13 290);
+  --border: oklch(0.96 0.004 295 / 12%);
+  --input: oklch(0.96 0.004 295 / 15%);
+  --ring: oklch(0.72 0.17 304);
+  --chart-1: oklch(0.72 0.17 304);
+  --chart-2: oklch(0.82 0.16 72);
+  --chart-3: oklch(0.68 0.12 175);
   --chart-4: oklch(0.70 0.13 145);
   --chart-5: oklch(0.68 0.11 25);
-  --sidebar: oklch(0.19 0.012 50);
-  --sidebar-foreground: oklch(0.96 0.005 50);
-  --sidebar-primary: oklch(0.72 0.13 50);
-  --sidebar-primary-foreground: oklch(0.17 0.012 50);
-  --sidebar-accent: oklch(0.27 0.018 50);
-  --sidebar-accent-foreground: oklch(0.96 0.005 50);
-  --sidebar-border: oklch(0.96 0.005 50 / 12%);
-  --sidebar-ring: oklch(0.72 0.13 50);
+  --sidebar: oklch(0.19 0.012 295);
+  --sidebar-foreground: oklch(0.96 0.004 295);
+  --sidebar-primary: oklch(0.72 0.17 304);
+  --sidebar-primary-foreground: oklch(0.17 0.010 295);
+  --sidebar-accent: oklch(0.27 0.014 295);
+  --sidebar-accent-foreground: oklch(0.96 0.004 295);
+  --sidebar-border: oklch(0.96 0.004 295 / 12%);
+  --sidebar-ring: oklch(0.72 0.17 304);
 }
 
 @layer base {
@@ -125,8 +125,75 @@
   }
   body {
     @apply bg-background text-foreground;
+    line-height: 1.55;
+    font-feature-settings: 'kern' 1, 'liga' 1;
   }
   html {
     @apply font-sans;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Tables, stats, and ticket IDs always render as tabular */
+  table, [data-slot="table"],
+  [data-slot="stat-value"],
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Tight leading for small uppercase labels and badges */
+  [data-slot="badge"],
+  .label-caps {
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+  }
+
+  /* Comfortable reading for prose / message bodies */
+  [data-slot="alert-description"],
+  .prose-body {
+    line-height: 1.65;
+  }
+}
+
+/* ─── Entrance animations ──────────────────────────────────────────────────── */
+
+@keyframes slide-up-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slide-up-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Suppress all motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up-fade {
+    animation: none;
+  }
+}
+
+/* ─── Interactive row feedback ─────────────────────────────────────────────── */
+
+/* Subtle press feel on clickable table rows */
+tr[class*="cursor-pointer"]:active td {
+  background-color: color-mix(in oklch, var(--muted) 60%, transparent);
+  transition: background-color 0.08s ease;
+}
+
+/* Dashboard list item press feedback */
+a[class*="rounded-md"][class*="border"]:active {
+  opacity: 0.75;
+  transition: opacity 0.08s ease;
 }

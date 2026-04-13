@@ -30,14 +30,14 @@ import type {
 } from '@/types'
 
 const ticketSchema = z.object({
-  title: z.string().min(5, 'Titulo deve ter pelo menos 5 caracteres'),
-  description: z.string().min(10, 'Descricao deve ter pelo menos 10 caracteres'),
+  title: z.string().min(5, 'Título deve ter pelo menos 5 caracteres'),
+  description: z.string().min(10, 'Descrição deve ter pelo menos 10 caracteres'),
   priority: z.enum(['critical', 'high', 'medium', 'low']),
   category: z.string().optional(),
   affected_service: z.string().optional(),
   environment: z.string().optional(),
   impact: z.string().optional(),
-  org_id: z.string().min(1, 'Organizacao e obrigatoria'),
+  org_id: z.string().min(1, 'Organização é obrigatória'),
   steps_to_reproduce: z.string().optional(),
   expected_behavior: z.string().optional(),
   actual_behavior: z.string().optional(),
@@ -47,18 +47,18 @@ type TicketFormData = z.infer<typeof ticketSchema>
 
 const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
   { value: 'low', label: 'Baixa' },
-  { value: 'medium', label: 'Media' },
+  { value: 'medium', label: 'Média' },
   { value: 'high', label: 'Alta' },
-  { value: 'critical', label: 'Critica' },
+  { value: 'critical', label: 'Crítica' },
 ]
 
 const CATEGORY_OPTIONS: { value: TicketCategory; label: string }[] = [
   { value: 'bug', label: 'Bug' },
-  { value: 'feature_request', label: 'Solicitacao de recurso' },
+  { value: 'feature_request', label: 'Solicitação de recurso' },
   { value: 'support', label: 'Suporte' },
-  { value: 'billing', label: 'Cobranca' },
-  { value: 'integration', label: 'Integracao' },
-  { value: 'configuration', label: 'Configuracao' },
+  { value: 'billing', label: 'Cobrança' },
+  { value: 'integration', label: 'Integração' },
+  { value: 'configuration', label: 'Configuração' },
 ]
 
 const SERVICE_OPTIONS: { value: AffectedService; label: string }[] = [
@@ -70,15 +70,15 @@ const SERVICE_OPTIONS: { value: AffectedService; label: string }[] = [
 ]
 
 const ENVIRONMENT_OPTIONS = [
-  { value: 'production', label: 'Producao' },
+  { value: 'production', label: 'Produção' },
   { value: 'staging', label: 'Staging' },
   { value: 'development', label: 'Desenvolvimento' },
 ]
 
 const IMPACT_OPTIONS: { value: TicketImpact; label: string }[] = [
-  { value: 'single_user', label: 'Um usuario' },
-  { value: 'multiple_users', label: 'Varios usuarios' },
-  { value: 'all_users', label: 'Todos os usuarios' },
+  { value: 'single_user', label: 'Um usuário' },
+  { value: 'multiple_users', label: 'Vários usuários' },
+  { value: 'all_users', label: 'Todos os usuários' },
   { value: 'system_wide', label: 'Sistema inteiro' },
 ]
 
@@ -242,18 +242,18 @@ export function TicketForm() {
           {/* Title */}
         <div className="space-y-1.5">
           <Label htmlFor="title">
-            Titulo <span className="text-destructive">*</span>
+            Título <span className="text-destructive">*</span>
           </Label>
           <Input
             id="title"
             {...register('title', {
-              required: 'Titulo e obrigatorio',
+              required: 'Título é obrigatório',
               minLength: {
                 value: 5,
-                message: 'Titulo deve ter pelo menos 5 caracteres',
+                message: 'Título deve ter pelo menos 5 caracteres',
               },
             })}
-            placeholder="Descreva brevemente o problema ou solicitacao"
+            placeholder="Descreva brevemente o problema ou solicitação"
             aria-invalid={!!errors.title}
           />
           {errors.title && (
@@ -264,7 +264,7 @@ export function TicketForm() {
         {/* Description */}
         <div className="space-y-1.5">
           <Label>
-            Descricao <span className="text-destructive">*</span>
+            Descrição <span className="text-destructive">*</span>
           </Label>
           <RichTextEditor
             content={descriptionHtml}
@@ -272,7 +272,7 @@ export function TicketForm() {
               setDescriptionHtml(html)
               setValue('description', text, { shouldValidate: true })
             }}
-            placeholder="Descreva o problema em detalhes. Quanto mais informacoes, melhor."
+            placeholder="Descreva o problema em detalhes. Quanto mais informações, melhor."
             minHeight="160px"
           />
           {errors.description && (
@@ -328,7 +328,7 @@ export function TicketForm() {
 
           {/* Affected Service */}
           <div className="space-y-1.5">
-            <Label>Servico afetado</Label>
+            <Label>Serviço afetado</Label>
             <Select
               value={selectedService ?? ''}
               onValueChange={(val) => setValue('affected_service', val ?? '')}
@@ -352,7 +352,7 @@ export function TicketForm() {
           {/* Organization */}
           <div className="space-y-1.5">
             <Label>
-              Organizacao <span className="text-destructive">*</span>
+              Organização <span className="text-destructive">*</span>
             </Label>
             <Select
               value={selectedOrgId}
@@ -443,7 +443,7 @@ export function TicketForm() {
             <Textarea
               id="actual_behavior"
               {...register('actual_behavior')}
-              placeholder="O que esta acontecendo?"
+              placeholder="O que está acontecendo?"
             />
           </div>
         </div>

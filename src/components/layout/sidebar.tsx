@@ -64,16 +64,16 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Tickets', href: '/tickets', icon: Ticket },
   { label: 'Clientes', href: '/clients', icon: Building2 },
-  { label: 'Usuarios', href: '/users', icon: Users },
+  { label: 'Usuários', href: '/users', icon: Users },
   { label: 'Base de Conhecimento', href: '/knowledge-base', icon: BookOpen },
-  { label: 'Relatorios', href: '/reports', icon: BarChart3 },
+  { label: 'Relatórios', href: '/reports', icon: BarChart3 },
   {
-    label: 'Configuracoes',
+    label: 'Configurações',
     href: '/settings',
     icon: Settings,
     internalOnly: true,
     children: [
-      { label: 'Integracoes', href: '/settings/integrations', icon: Link2 },
+      { label: 'Integrações', href: '/settings/integrations', icon: Link2 },
       { label: 'IA', href: '/settings/ai', icon: Brain },
       { label: 'SLA', href: '/settings/sla', icon: Timer },
       { label: 'API Keys', href: '/settings/api-keys', icon: Key },
@@ -137,14 +137,23 @@ export function Sidebar({ user }: { user: SidebarUser }) {
       )}
     >
       {/* Brand */}
-      <div className="flex h-14 items-center gap-2 border-b border-border px-4">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-tight">
-          AW
-        </div>
-        {!collapsed && (
-          <span className="truncate text-sm font-semibold text-sidebar-foreground">
-            AWFood Suporte
-          </span>
+      <div className="flex h-14 items-center border-b border-border px-4">
+        {collapsed ? (
+          <img
+            src="/favicon.png"
+            alt="AWFood"
+            width={32}
+            height={32}
+            className="size-8 shrink-0 rounded-md object-contain"
+          />
+        ) : (
+          <img
+            src="/logo.png"
+            alt="AWFood Suporte"
+            width={140}
+            height={36}
+            className="h-8 w-auto max-w-[140px] shrink-0 object-contain"
+          />
         )}
       </div>
 
@@ -315,13 +324,13 @@ export function Sidebar({ user }: { user: SidebarUser }) {
     <AlertDialog open={!!pendingHref} onOpenChange={(open) => !open && setPendingHref(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Sair da criacao de ticket?</AlertDialogTitle>
+          <AlertDialogTitle>Descartar novo ticket?</AlertDialogTitle>
           <AlertDialogDescription>
-            Voce esta no meio da criacao de um ticket. Se sair agora, todas as informacoes preenchidas serao perdidas.
+            Você está criando um novo ticket. Se sair agora, todas as informações preenchidas serão perdidas.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Continuar editando</AlertDialogCancel>
+          <AlertDialogCancel>Continuar criando</AlertDialogCancel>
           <AlertDialogAction
             className="bg-destructive text-white hover:bg-destructive/90"
             onClick={confirmNavigation}

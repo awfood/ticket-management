@@ -13,7 +13,7 @@ const PRIORITY_CONFIG: Record<
   }
 > = {
   critical: {
-    label: 'Critica',
+    label: 'Crítica',
     className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
     icon: AlertTriangle,
   },
@@ -24,7 +24,7 @@ const PRIORITY_CONFIG: Record<
     icon: ArrowUp,
   },
   medium: {
-    label: 'Media',
+    label: 'Média',
     className:
       'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
     icon: Minus,

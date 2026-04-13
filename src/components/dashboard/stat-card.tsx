@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { useCountUp } from '@/hooks/use-count-up'
 
 interface StatCardProps {
   title: string
@@ -46,6 +47,21 @@ const COLOR_MAP = {
   },
 }
 
+/** Parse a value like "24h" or "98%" into { num: 24, suffix: "h" } */
+function parseValue(value: number | string): { num: number; suffix: string } | null {
+  if (typeof value === 'number') return { num: value, suffix: '' }
+  const match = String(value).match(/^([\d.]+)(.*)$/)
+  if (!match) return null
+  return { num: parseFloat(match[1]), suffix: match[2] }
+}
+
+function AnimatedValue({ value }: { value: number | string }) {
+  const parsed = parseValue(value)
+  const animated = useCountUp(parsed ? Math.round(parsed.num) : 0)
+  if (!parsed) return <>{value}</>
+  return <>{animated}{parsed.suffix}</>
+}
+
 export function StatCard({
   title,
   value,
@@ -71,7 +87,9 @@ export function StatCard({
         <div className="flex-1 min-w-0">
           <p className="text-xs text-muted-foreground truncate">{title}</p>
           <div className="flex items-baseline gap-2">
-            <p className="text-xl font-semibold tabular-nums">{value}</p>
+            <p className="text-xl font-semibold tabular-nums">
+              <AnimatedValue value={value} />
+            </p>
             {trend && (
               <span
                 className={cn(

@@ -32,8 +32,8 @@ import type { KnowledgeBaseArticle, PaginatedResponse } from '@/types'
 const CATEGORIES = [
   { value: '', label: 'Todas categorias' },
   { value: 'geral', label: 'Primeiros Passos' },
-  { value: 'cardapio', label: 'Cardapio e Produtos' },
-  { value: 'integracao', label: 'Integracoes' },
+  { value: 'cardapio', label: 'Cardápio e Produtos' },
+  { value: 'integracao', label: 'Integrações' },
   { value: 'pdv', label: 'PDV e Vendas' },
   { value: 'financeiro', label: 'Financeiro' },
   { value: 'fiscal', label: 'Fiscal' },
@@ -41,9 +41,9 @@ const CATEGORIES = [
   { value: 'estoque', label: 'Estoque' },
   { value: 'delivery', label: 'Delivery' },
   { value: 'cadastros', label: 'Cadastros' },
-  { value: 'promocoes', label: 'Promocoes' },
-  { value: 'relatorios', label: 'Relatorios' },
-  { value: 'configuracao', label: 'Configuracoes' },
+  { value: 'promocoes', label: 'Promoções' },
+  { value: 'relatorios', label: 'Relatórios' },
+  { value: 'configuracao', label: 'Configurações' },
   { value: 'troubleshooting', label: 'Problemas' },
   { value: 'pedidos', label: 'Pedidos' },
 ]
@@ -51,9 +51,9 @@ const CATEGORIES = [
 const SCORE_FILTERS = [
   { value: '', label: 'Qualquer score' },
   { value: '90-100', label: 'Alto (90-100)' },
-  { value: '70-89', label: 'Medio (70-89)' },
+  { value: '70-89', label: 'Médio (70-89)' },
   { value: '50-69', label: 'Baixo (50-69)' },
-  { value: '0-49', label: 'Critico (0-49)' },
+  { value: '0-49', label: 'Crítico (0-49)' },
 ]
 
 function getScoreColor(score: number | null): string {
@@ -73,10 +73,10 @@ function getScoreIcon(score: number | null) {
 
 function getScoreLabel(score: number | null): string {
   if (score === null) return ''
-  if (score >= 90) return 'Alta confianca'
-  if (score >= 70) return 'Media confianca'
-  if (score >= 50) return 'Baixa confianca'
-  return 'Revisao necessaria'
+  if (score >= 90) return 'Alta confiança'
+  if (score >= 70) return 'Média confiança'
+  if (score >= 50) return 'Baixa confiança'
+  return 'Revisão necessária'
 }
 
 async function fetchArticles(
@@ -112,7 +112,7 @@ async function semanticSearch(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query }),
   })
-  if (!res.ok) throw new Error('Erro na busca semantica')
+  if (!res.ok) throw new Error('Erro na busca semântica')
   const data = await res.json()
   return data.results ?? []
 }
@@ -222,7 +222,7 @@ export function KBList() {
         <div>
           <h1 className="text-2xl font-semibold">Base de Conhecimento</h1>
           <p className="text-sm text-muted-foreground">
-            Artigos e documentacao de suporte
+            Artigos e documentação de suporte
           </p>
         </div>
         {user.isInternal && (
@@ -250,10 +250,10 @@ export function KBList() {
           variant={semanticMode ? 'default' : 'outline'}
           size="sm"
           onClick={() => { const next = !semanticMode; setSemanticMode(next); updateURL({ semantic: next ? '1' : '' }) }}
-          title="Busca semantica com IA"
+          title="Busca semântica com IA"
         >
           <Sparkles className="size-3.5" data-icon="inline-start" />
-          Semantica
+          Semântica
         </Button>
 
         <Select value={category} onValueChange={(v) => { const val = v ?? ''; setCategory(val); setPage(1); updateURL({ category: val, page: '' }) }}>
@@ -409,7 +409,7 @@ export function KBList() {
             Anterior
           </Button>
           <span className="text-sm text-muted-foreground">
-            Pagina {page} de {articlesResult.total_pages}
+            Página {page} de {articlesResult.total_pages}
           </span>
           <Button
             variant="outline"
@@ -417,7 +417,7 @@ export function KBList() {
             disabled={page >= articlesResult.total_pages}
             onClick={() => { const p = page + 1; setPage(p); updateURL({ page: String(p) }) }}
           >
-            Proxima
+            Próxima
           </Button>
         </div>
       )}

@@ -26,6 +26,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { TicketStatusBadge, STATUS_CONFIG } from './ticket-status-badge'
 import { TicketPriorityBadge, PRIORITY_CONFIG } from './ticket-priority-badge'
 import { TicketComments } from './ticket-comments'
@@ -49,13 +59,14 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
   const router = useRouter()
   const user = useUser()
   const queryClient = useQueryClient()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // Refetch ticket data to keep updated
   const { data: ticket } = useQuery({
     queryKey: ['ticket', initialTicket.id],
     queryFn: async () => {
       const res = await fetch(`/api/tickets/${initialTicket.id}`)
-      if (!res.ok) throw new Error('Erro ao carregar ticket')
+      if (!res.ok) throw new Error('Não foi possível carregar o ticket. Tente recarregar a página.')
       return res.json() as Promise<Ticket & { comments_count: number }>
     },
     initialData: initialTicket,
@@ -89,7 +100,7 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(
-          (err as { error?: string }).error ?? 'Erro ao atualizar'
+          (err as { error?: string }).error ?? 'Falha ao atualizar o ticket. Verifique sua conexão e tente novamente.'
         )
       }
       return res.json()
@@ -111,10 +122,10 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
       const res = await fetch(`/api/tickets/${ticket.id}`, {
         method: 'DELETE',
       })
-      if (!res.ok) throw new Error('Erro ao excluir ticket')
+      if (!res.ok) throw new Error('Não foi possível excluir o ticket. Verifique se você tem permissão.')
     },
     onSuccess: () => {
-      toast.success('Ticket excluido!')
+      toast.success('Ticket excluído.')
       router.push('/tickets')
     },
     onError: (err: Error) => {
@@ -162,11 +173,7 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => {
-              if (confirm('Tem certeza que deseja excluir este ticket?')) {
-                deleteTicket.mutate()
-              }
-            }}
+            onClick={() => setDeleteDialogOpen(true)}
             disabled={deleteTicket.isPending}
           >
             {deleteTicket.isPending ? (
@@ -174,7 +181,7 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
             ) : (
               <Trash2 className="size-4" />
             )}
-            Excluir
+            Excluir ticket
           </Button>
         )}
       </div>
@@ -185,7 +192,7 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
         <div className="space-y-6">
           {/* Description */}
           <div className="rounded-lg border border-border bg-card p-4">
-            <h3 className="text-sm font-semibold mb-2">Descricao</h3>
+            <h3 className="text-sm font-semibold mb-2">Descrição</h3>
             {ticket.description_html ? (
               <RichTextViewer content={ticket.description_html} />
             ) : (
@@ -237,9 +244,9 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
           <Tabs defaultValue="comments">
             <TabsList>
               <TabsTrigger value="comments">
-                Comentarios ({ticket.comments_count})
+                Comentários ({ticket.comments_count})
               </TabsTrigger>
-              <TabsTrigger value="history">Historico</TabsTrigger>
+              <TabsTrigger value="history">Histórico</TabsTrigger>
             </TabsList>
             <TabsContent value="comments" className="mt-4">
               <TicketComments ticketId={ticket.id} />
@@ -305,17 +312,17 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
             {user.isInternal && (
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Responsavel
+                  Responsável
                 </label>
                 <Select
                   value={ticket.assigned_to ?? 'unassigned'}
                   onValueChange={handleAssigneeChange}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Nao atribuido" />
+                    <SelectValue placeholder="Não atribuído" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">Nao atribuido</SelectItem>
+                    <SelectItem value="unassigned">Não atribuído</SelectItem>
                     {agents?.map((agent) => (
                       <SelectItem key={agent.id} value={agent.id}>
                         {agent.full_name}
@@ -334,7 +341,7 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
               <div className="flex items-center gap-2">
                 <Building2 className="size-4 text-muted-foreground" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Organizacao</p>
+                  <p className="text-xs text-muted-foreground">Organização</p>
                   <p className="font-medium">
                     {ticket.organization?.name ?? '-'}
                   </p>
@@ -399,7 +406,7 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
                   <Tag className="size-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      Servico afetado
+                      Serviço afetado
                     </p>
                     <p className="font-medium">{ticket.affected_service}</p>
                   </div>
@@ -409,7 +416,7 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
               {/* SLA */}
               {ticket.sla_breach && (
                 <div className="rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
-                  SLA violado
+                  Prazo de resposta excedido
                 </div>
               )}
 
@@ -445,6 +452,27 @@ export function TicketDetail({ ticket: initialTicket }: TicketDetailProps) {
           )}
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir ticket?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O ticket <strong>{ticket.ticket_number}</strong> e todos os seus comentários serão excluídos permanentemente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => deleteTicket.mutate()}
+            >
+              <Trash2 className="size-4" />
+              Excluir ticket
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

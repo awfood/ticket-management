@@ -49,9 +49,9 @@ const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
 ]
 
 const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
-  { value: 'critical', label: 'Critica' },
+  { value: 'critical', label: 'Crítica' },
   { value: 'high', label: 'Alta' },
-  { value: 'medium', label: 'Media' },
+  { value: 'medium', label: 'Média' },
   { value: 'low', label: 'Baixa' },
 ]
 
@@ -204,7 +204,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
   const columns: ColumnDef<Ticket>[] = [
     {
       accessorKey: 'ticket_number',
-      header: 'Numero',
+      header: 'Nº',
       cell: ({ row }) => (
         <span className="font-mono text-xs text-muted-foreground">
           {row.original.ticket_number}
@@ -214,7 +214,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
     },
     {
       accessorKey: 'title',
-      header: 'Titulo',
+      header: 'Título',
       cell: ({ row }) => (
         <div className="max-w-[400px]">
           <p className="truncate font-medium">{row.original.title}</p>
@@ -256,7 +256,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
     },
     {
       accessorKey: 'organization',
-      header: 'Organizacao',
+      header: 'Organização',
       cell: ({ row }) => (
         <span className="truncate text-sm text-muted-foreground">
           {row.original.organization?.name ?? '-'}
@@ -266,13 +266,13 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
     },
     {
       accessorKey: 'assignee',
-      header: 'Responsavel',
+      header: 'Responsável',
       cell: ({ row }) => {
         const assignee = row.original.assignee
         if (!assignee) {
           return (
             <span className="text-sm text-muted-foreground/60">
-              Nao atribuido
+              Não atribuído
             </span>
           )
         }
@@ -350,7 +350,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
                 setPage(1)
                 updateSearchURL(e.target.value)
               }}
-              placeholder="Buscar tickets por titulo, numero ou descricao..."
+              placeholder="Buscar por título, número ou descrição..."
               className="pl-9"
             />
             {search && (
@@ -491,7 +491,9 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
               <TableRow>
                 <TableCell colSpan={columns.length}>
                   <div className="py-8 text-center text-sm text-muted-foreground">
-                    Nenhum ticket encontrado.
+                    {hasActiveFilters
+                      ? 'Nenhum ticket corresponde aos filtros aplicados.'
+                      : 'Nenhum ticket encontrado. Use o botão "Novo Ticket" para criar o primeiro.'}
                   </div>
                 </TableCell>
               </TableRow>
@@ -523,7 +525,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Pagina {page} de {totalPages}
+            Página {page} de {totalPages}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -541,7 +543,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
               onClick={() => { const p = Math.min(totalPages, page + 1); setPage(p); updateURL({ page: String(p) }) }}
               disabled={page >= totalPages}
             >
-              Proximo
+              Próximo
               <ChevronRight className="size-4" />
             </Button>
           </div>

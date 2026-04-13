@@ -53,9 +53,9 @@ import type { TicketPriority, SlaPolicy } from '@/types'
 // --- Constants ---
 
 const PRIORITY_LABELS: Record<TicketPriority, string> = {
-  critical: 'Critica',
+  critical: 'Crítica',
   high: 'Alta',
-  medium: 'Media',
+  medium: 'Média',
   low: 'Baixa',
 }
 
