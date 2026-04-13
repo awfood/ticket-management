@@ -191,11 +191,9 @@ export function JiraImportDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Download className="size-4 mr-1.5" />
-          Importar do Jira
-        </Button>
+      <DialogTrigger render={<Button variant="outline" size="sm" />}>
+        <Download className="size-4 mr-1.5" />
+        Importar do Jira
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
         {result ? (
