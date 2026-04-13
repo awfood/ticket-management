@@ -7,6 +7,7 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
+  AlertCircle,
   RefreshCw,
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
@@ -273,7 +274,7 @@ export function DashboardHome() {
                         </span>
                         <span className="truncate">{ticket.title}</span>
                       </div>
-                      <Loader2 className="size-3.5 text-red-500 animate-spin ml-2 shrink-0" />
+                      <AlertCircle className="size-3.5 text-red-500 ml-2 shrink-0" />
                     </a>
                   ))}
                 </div>
