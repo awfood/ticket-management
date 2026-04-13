@@ -105,7 +105,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
     >
       {/* Brand */}
       <div className="flex h-14 items-center gap-2 border-b border-border px-4">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-tight">
           AW
         </div>
         {!collapsed && (

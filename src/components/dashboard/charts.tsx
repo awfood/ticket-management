@@ -115,9 +115,9 @@ export function TicketsByStatusChart({
               formatter={(value: unknown, name: unknown) => [String(value), String(name)]}
               contentStyle={{
                 borderRadius: '8px',
-                border: '1px solid hsl(var(--border))',
-                backgroundColor: 'hsl(var(--popover))',
-                color: 'hsl(var(--popover-foreground))',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-popover)',
+                color: 'var(--color-popover-foreground)',
                 fontSize: '12px',
               }}
             />
@@ -125,7 +125,7 @@ export function TicketsByStatusChart({
               verticalAlign="bottom"
               height={36}
               formatter={(value: unknown) => (
-                <span style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>
+                <span style={{ fontSize: '11px', color: 'var(--color-muted-foreground)' }}>
                   {String(value)}
                 </span>
               )}
@@ -166,22 +166,22 @@ export function TicketsByPriorityChart({
             data={chartData}
             margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-            <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border)" />
+            <XAxis type="number" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
             <YAxis
               type="category"
               dataKey="name"
               width={70}
               tick={{ fontSize: 11 }}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--color-muted-foreground)"
             />
             <Tooltip
               formatter={(value: unknown) => [String(value), 'Tickets']}
               contentStyle={{
                 borderRadius: '8px',
-                border: '1px solid hsl(var(--border))',
-                backgroundColor: 'hsl(var(--popover))',
-                color: 'hsl(var(--popover-foreground))',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-popover)',
+                color: 'var(--color-popover-foreground)',
                 fontSize: '12px',
               }}
             />
@@ -225,16 +225,16 @@ export function TicketsOverTimeChart({
             data={chartData}
             margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis
               dataKey="dateLabel"
               tick={{ fontSize: 10 }}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--color-muted-foreground)"
               interval="preserveStartEnd"
             />
             <YAxis
               tick={{ fontSize: 11 }}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--color-muted-foreground)"
               allowDecimals={false}
             />
             <Tooltip
@@ -246,9 +246,9 @@ export function TicketsOverTimeChart({
               labelFormatter={(label: unknown) => `Data: ${String(label)}`}
               contentStyle={{
                 borderRadius: '8px',
-                border: '1px solid hsl(var(--border))',
-                backgroundColor: 'hsl(var(--popover))',
-                color: 'hsl(var(--popover-foreground))',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-popover)',
+                color: 'var(--color-popover-foreground)',
                 fontSize: '12px',
               }}
             />
@@ -260,7 +260,7 @@ export function TicketsOverTimeChart({
                   resolved: 'Resolvidos',
                 }
                 return (
-                  <span style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--color-muted-foreground)' }}>
                     {labels[v] ?? v}
                   </span>
                 )
@@ -312,16 +312,16 @@ export function ResolutionTimeChart({
             data={chartData}
             margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis
               dataKey="dateLabel"
               tick={{ fontSize: 10 }}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--color-muted-foreground)"
               interval="preserveStartEnd"
             />
             <YAxis
               tick={{ fontSize: 11 }}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--color-muted-foreground)"
               allowDecimals={false}
             />
             <Tooltip
@@ -329,9 +329,9 @@ export function ResolutionTimeChart({
               labelFormatter={(label: unknown) => `Data: ${String(label)}`}
               contentStyle={{
                 borderRadius: '8px',
-                border: '1px solid hsl(var(--border))',
-                backgroundColor: 'hsl(var(--popover))',
-                color: 'hsl(var(--popover-foreground))',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-popover)',
+                color: 'var(--color-popover-foreground)',
                 fontSize: '12px',
               }}
             />
