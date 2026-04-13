@@ -16,6 +16,13 @@ export interface DevPromptResult {
   tokens_used: number
 }
 
+export interface DevPromptOptions {
+  /** Observacoes extras do desenvolvedor para incluir no prompt */
+  extra_notes?: string
+  /** Se true, a IA de destino ja conhece a plataforma — reduz contexto de arquitetura */
+  ai_has_context?: boolean
+}
+
 interface TicketContext {
   ticket_number: string
   title: string
@@ -31,7 +38,8 @@ interface TicketContext {
   previousAnalysis?: string
 }
 
-const SYSTEM_PROMPT = `Voce e um engenheiro senior da plataforma AWFood. Sua tarefa e gerar um prompt de desenvolvimento estruturado que sera usado no Claude Code ou outra ferramenta de IA para implementar a solucao de um ticket de suporte.
+// System prompt COMPLETO — inclui toda a arquitetura para IAs sem contexto previo
+const SYSTEM_PROMPT_FULL = `Voce e um engenheiro senior da plataforma AWFood. Sua tarefa e gerar um prompt de desenvolvimento estruturado que sera usado no Claude Code ou outra ferramenta de IA para implementar a solucao de um ticket de suporte.
 
 A plataforma AWFood tem a seguinte arquitetura:
 - admin/: Laravel 5.6 — Back-office: billing, CRM, revendedores. Port 9005
@@ -71,10 +79,48 @@ Regras para o prompt gerado:
 - O prompt deve ser em portugues
 - Responda APENAS com o JSON, sem blocos de codigo`
 
+// System prompt COMPACTO — para IAs que ja conhecem a plataforma (ex: Claude Code com CLAUDE.md)
+// Omite arquitetura, linguagem, frameworks — foca no problema e na solucao
+const SYSTEM_PROMPT_COMPACT = `Voce e um engenheiro senior da plataforma AWFood. Sua tarefa e gerar um prompt de desenvolvimento estruturado para implementar a solucao de um ticket de suporte.
+
+IMPORTANTE: A IA que recebera este prompt ja possui conhecimento previo da arquitetura da plataforma AWFood (via CLAUDE.md ou contexto equivalente). Por isso, NAO inclua no prompt:
+- Descricao da arquitetura geral (servicos, portas, linguagens)
+- Explicacoes sobre multi-tenancy, observers, ou padroes do projeto
+- Stack tecnologico (PHP 7.4, Laravel 5.6, etc.)
+- Lista de integracoes ou infraestrutura
+
+Foque APENAS em:
+- O problema especifico a ser resolvido
+- Passos concretos de implementacao
+- Comportamento esperado vs atual
+- Restricoes especificas deste ticket (se houver)
+
+Voce deve gerar um JSON valido com:
+{
+  "prompt": "O prompt conciso e direto que sera copiado para o Claude Code. Sem contexto generico de plataforma. Focado exclusivamente no problema e na implementacao.",
+  "context_summary": "Resumo de 2-3 frases do problema para contexto rapido",
+  "affected_files": [],
+  "approach_steps": ["Passo 1: ...", "Passo 2: ..."],
+  "test_suggestions": ["Testar cenario X", "Verificar Y"]
+}
+
+Regras para o prompt gerado:
+- Direto ao ponto — sem introducoes ou explicacoes de contexto da plataforma
+- NAO inclua affected_files — a IA de destino ja tem acesso ao codigo e vai localizar os arquivos sozinha. Retorne sempre um array vazio para affected_files
+- NAO suponha caminhos de arquivos — deixe a IA de destino explorar o codigo
+- Se for bug: passos para reproduzir e comportamento esperado
+- Se for feature: requisitos funcionais e exemplos de uso
+- O prompt deve ser em portugues
+- Responda APENAS com o JSON, sem blocos de codigo`
+
 export async function generateDevPrompt(
   ticket: TicketContext,
-  provider: AIProviderClient
+  provider: AIProviderClient,
+  options?: DevPromptOptions
 ): Promise<DevPromptResult> {
+  const aiHasContext = options?.ai_has_context ?? false
+  const extraNotes = options?.extra_notes?.trim()
+
   const parts: string[] = []
   parts.push(`## Ticket: ${ticket.ticket_number} - ${ticket.title}`)
   parts.push(`Descricao: ${ticket.description}`)
@@ -109,11 +155,23 @@ export async function generateDevPrompt(
     parts.push(`\n## Analise IA anterior: ${ticket.previousAnalysis.slice(0, 500)}`)
   }
 
+  // Observacoes extras do desenvolvedor
+  if (extraNotes) {
+    parts.push(`\n## Observacoes do desenvolvedor\n${extraNotes}`)
+  }
+
+  if (aiHasContext) {
+    parts.push('\nNOTA: A IA de destino ja possui conhecimento da plataforma AWFood. Gere um prompt conciso, sem repetir contexto de arquitetura.')
+  }
+
   parts.push('\nGere o prompt de desenvolvimento para este ticket.')
+
+  // Seleciona system prompt baseado no toggle de contexto
+  const systemPrompt = aiHasContext ? SYSTEM_PROMPT_COMPACT : SYSTEM_PROMPT_FULL
 
   const response = await provider.chat(
     [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: systemPrompt },
       { role: 'user', content: parts.join('\n') },
     ],
     { maxTokens: 2048, temperature: 0.3 }
@@ -129,7 +187,8 @@ export async function generateDevPrompt(
     return {
       prompt: String(parsed.prompt ?? ''),
       context_summary: String(parsed.context_summary ?? ''),
-      affected_files: Array.isArray(parsed.affected_files) ? parsed.affected_files.map(String) : [],
+      // Quando ai_has_context, nunca sugere arquivos — a IA de destino localiza sozinha
+      affected_files: aiHasContext ? [] : (Array.isArray(parsed.affected_files) ? parsed.affected_files.map(String) : []),
       approach_steps: Array.isArray(parsed.approach_steps) ? parsed.approach_steps.map(String) : [],
       test_suggestions: Array.isArray(parsed.test_suggestions) ? parsed.test_suggestions.map(String) : [],
       model_used: response.model,

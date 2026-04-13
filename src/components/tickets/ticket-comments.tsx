@@ -26,6 +26,8 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { FileUpload } from '@/components/shared/file-upload'
 import { RichTextEditor, RichTextViewer } from '@/components/shared/rich-text-editor'
+import { DevPromptDialog } from './dev-prompt-dialog'
+import type { DevPromptConfig } from './dev-prompt-dialog'
 import { useUser } from '@/hooks/use-user'
 import { cn } from '@/lib/utils'
 import type { TicketComment, CommentType } from '@/types'
@@ -70,6 +72,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
   const [replyingTo, setReplyingTo] = useState<{ id: string; authorName: string; bodyPreview: string } | null>(null)
   const [analyzingCommentId, setAnalyzingCommentId] = useState<string | null>(null)
   const [generatingDevPrompt, setGeneratingDevPrompt] = useState(false)
+  const [devPromptDialogOpen, setDevPromptDialogOpen] = useState(false)
   const hasDevPermission = user.permissions.includes('ai.dev_prompt') || user.role === 'super_admin'
   const editorRef = React.useRef<HTMLDivElement>(null)
   const [commentAnalysis, setCommentAnalysis] = useState<{
@@ -139,13 +142,18 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
     })
   }
 
-  async function handleGenerateDevPrompt() {
+  async function handleGenerateDevPrompt(config: DevPromptConfig) {
+    setDevPromptDialogOpen(false)
     setGeneratingDevPrompt(true)
     try {
       const res = await fetch(`/api/tickets/${ticketId}/ai`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'dev_prompt' }),
+        body: JSON.stringify({
+          type: 'dev_prompt',
+          extra_notes: config.extra_notes,
+          ai_has_context: config.ai_has_context,
+        }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -397,7 +405,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
                           variant="ghost"
                           size="sm"
                           className="h-6 text-xs text-amber-600 hover:text-amber-800 hover:bg-amber-50 gap-1 dark:text-amber-400 dark:hover:bg-amber-950"
-                          onClick={handleGenerateDevPrompt}
+                          onClick={() => setDevPromptDialogOpen(true)}
                           disabled={generatingDevPrompt}
                         >
                           {generatingDevPrompt ? (
@@ -542,6 +550,13 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
           </Button>
         </div>
       </form>
+
+      {/* Dialog de configuracao do Prompt Dev */}
+      <DevPromptDialog
+        open={devPromptDialogOpen}
+        onOpenChange={setDevPromptDialogOpen}
+        onConfirm={handleGenerateDevPrompt}
+      />
     </div>
   )
 }

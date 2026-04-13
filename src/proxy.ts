@@ -10,6 +10,10 @@ const publicPaths = [
 ]
 
 function isPublicPath(pathname: string): boolean {
+  // API v1 and webhooks handle their own auth (API keys)
+  if (pathname.startsWith('/api/v1/') || pathname.startsWith('/api/webhooks/')) {
+    return true
+  }
   return publicPaths.some((path) => pathname.startsWith(path))
 }
 

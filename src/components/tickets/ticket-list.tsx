@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import {
   useReactTable,
@@ -90,8 +90,37 @@ async function fetchTickets(
 
 export function TicketList({ initialFilters = {} }: TicketListProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const user = useUser()
+
+  // Sync filters to URL
+  const updateURL = useCallback((updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+    }
+    if (params.get('page') === '1') params.delete('page')
+    const qs = params.toString()
+    router.replace(`${pathname}${qs ? '?' + qs : ''}`, { scroll: false })
+  }, [searchParams, pathname, router])
+
+  // Debounced URL sync for search input
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const updateSearchURL = useCallback((value: string) => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => {
+      updateURL({ search: value, page: '' })
+    }, 500)
+  }, [updateURL])
+
+  useEffect(() => {
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current) }
+  }, [])
 
   // Filters state
   const [search, setSearch] = useState(
@@ -139,29 +168,34 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
   const total = data?.total ?? 0
 
   const toggleStatus = useCallback((status: TicketStatus) => {
-    setSelectedStatuses((prev) =>
-      prev.includes(status)
+    setSelectedStatuses((prev) => {
+      const next = prev.includes(status)
         ? prev.filter((s) => s !== status)
         : [...prev, status]
-    )
+      updateURL({ status: next.join(','), page: '' })
+      return next
+    })
     setPage(1)
-  }, [])
+  }, [updateURL])
 
   const togglePriority = useCallback((priority: TicketPriority) => {
-    setSelectedPriorities((prev) =>
-      prev.includes(priority)
+    setSelectedPriorities((prev) => {
+      const next = prev.includes(priority)
         ? prev.filter((p) => p !== priority)
         : [...prev, priority]
-    )
+      updateURL({ priority: next.join(','), page: '' })
+      return next
+    })
     setPage(1)
-  }, [])
+  }, [updateURL])
 
   const clearFilters = useCallback(() => {
     setSearch('')
     setSelectedStatuses([])
     setSelectedPriorities([])
     setPage(1)
-  }, [])
+    updateURL({ search: '', status: '', priority: '', page: '' })
+  }, [updateURL])
 
   const hasActiveFilters =
     search || selectedStatuses.length > 0 || selectedPriorities.length > 0
@@ -314,6 +348,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
               onChange={(e) => {
                 setSearch(e.target.value)
                 setPage(1)
+                updateSearchURL(e.target.value)
               }}
               placeholder="Buscar tickets por titulo, numero ou descricao..."
               className="pl-9"
@@ -324,6 +359,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
                 onClick={() => {
                   setSearch('')
                   setPage(1)
+                  updateURL({ search: '', page: '' })
                 }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-0.5 hover:bg-muted"
               >
@@ -493,7 +529,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(Math.max(1, page - 1))}
+              onClick={() => { const p = Math.max(1, page - 1); setPage(p); updateURL({ page: String(p) }) }}
               disabled={page <= 1}
             >
               <ChevronLeft className="size-4" />
@@ -502,7 +538,7 @@ export function TicketList({ initialFilters = {} }: TicketListProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              onClick={() => { const p = Math.min(totalPages, page + 1); setPage(p); updateURL({ page: String(p) }) }}
               disabled={page >= totalPages}
             >
               Proximo

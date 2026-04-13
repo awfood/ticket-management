@@ -28,6 +28,8 @@ export async function POST(
     const requestBody = body as Record<string, unknown>
     const commentId = requestBody.comment_id as string | undefined
     const isDevPrompt = requestBody.type === 'dev_prompt'
+    const devPromptExtraNotes = requestBody.extra_notes as string | undefined
+    const devPromptAiHasContext = requestBody.ai_has_context as boolean | undefined
 
     // Fetch ticket
     const { data: ticket, error: ticketError } = await supabase
@@ -145,7 +147,11 @@ export async function POST(
             ? String((prevDevAnalysis.result as Record<string, unknown>).diagnosis ?? '')
             : undefined,
         },
-        provider
+        provider,
+        {
+          extra_notes: devPromptExtraNotes,
+          ai_has_context: devPromptAiHasContext,
+        }
       )
 
       // Store result
@@ -164,13 +170,18 @@ export async function POST(
         ticket_id: id,
         author_id: user.id,
         body: `**Prompt de Desenvolvimento Gerado**\n\n${devPromptResult.prompt}`,
-        body_html: formatDevPromptAsHtml(devPromptResult),
+        body_html: formatDevPromptAsHtml(devPromptResult, {
+          extra_notes: devPromptExtraNotes,
+          ai_has_context: devPromptAiHasContext,
+        }),
         is_internal: true,
         comment_type: 'ai_dev_prompt',
         metadata: {
           affected_files: devPromptResult.affected_files,
           approach_steps: devPromptResult.approach_steps,
           test_suggestions: devPromptResult.test_suggestions,
+          extra_notes: devPromptExtraNotes || null,
+          ai_has_context: devPromptAiHasContext ?? false,
         },
       })
 
@@ -381,9 +392,27 @@ function formatAnalysisAsComment(
   return parts.join('\n')
 }
 
-function formatDevPromptAsHtml(result: Awaited<ReturnType<typeof generateDevPrompt>>): string {
+function formatDevPromptAsHtml(
+  result: Awaited<ReturnType<typeof generateDevPrompt>>,
+  opts?: { extra_notes?: string; ai_has_context?: boolean }
+): string {
   const sections: string[] = []
   sections.push('<h3>Prompt de Desenvolvimento</h3>')
+
+  // Badges de configuracao
+  const badges: string[] = []
+  if (opts?.ai_has_context) {
+    badges.push('<span style="display:inline-block;background:#059669;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:6px;">IA com contexto previo</span>')
+  } else {
+    badges.push('<span style="display:inline-block;background:#6366f1;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:6px;">Prompt completo</span>')
+  }
+  sections.push(`<p>${badges.join('')}</p>`)
+
+  // Observacoes extras do dev
+  if (opts?.extra_notes) {
+    sections.push(`<div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:13px;"><strong>Observacoes do dev:</strong> ${escapeHtml(opts.extra_notes)}</div>`)
+  }
+
   sections.push(`<pre style="white-space:pre-wrap;background:#1e1e2e;color:#cdd6f4;padding:12px;border-radius:6px;font-size:13px;line-height:1.5;overflow-x:auto;">${escapeHtml(result.prompt)}</pre>`)
 
   if (result.affected_files.length > 0) {

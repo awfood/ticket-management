@@ -57,8 +57,11 @@ import { TagInput } from '@/components/shared/tag-input'
 interface TemplateField {
   key: string
   label: string
+  type?: string
   placeholder?: string
   required?: boolean
+  options?: string[]
+  validation?: { min?: number; max?: number; pattern?: string }
 }
 
 interface Template {
@@ -323,7 +326,7 @@ function TemplateFormDialog({
   function addField() {
     setFields((prev) => [
       ...prev,
-      { key: '', label: '', placeholder: '', required: false },
+      { key: '', label: '', type: 'text', placeholder: '', required: false, options: [] },
     ])
   }
 
@@ -473,40 +476,86 @@ function TemplateFormDialog({
               </p>
             )}
             {fields.map((field, index) => (
-              <div key={index} className="flex items-start gap-2 p-2 rounded border bg-muted/50">
-                <div className="grid gap-2 flex-1 sm:grid-cols-3">
-                  <Input
-                    value={field.label}
-                    onChange={(e) => updateField(index, { label: e.target.value })}
-                    placeholder="Label do campo"
-                    className="text-sm"
-                  />
-                  <Input
-                    value={field.key}
-                    onChange={(e) => updateField(index, { key: e.target.value })}
-                    placeholder="Chave (auto)"
-                    className="text-sm font-mono"
-                  />
-                  <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={field.required ?? false}
-                        onChange={(e) => updateField(index, { required: e.target.checked })}
-                        className="rounded"
-                      />
-                      Obrigatorio
-                    </label>
+              <div key={index} className="rounded border bg-muted/50 p-3 space-y-2">
+                <div className="flex items-start gap-2">
+                  <div className="grid gap-2 flex-1 sm:grid-cols-4">
+                    <Input
+                      value={field.label}
+                      onChange={(e) => updateField(index, { label: e.target.value })}
+                      placeholder="Label do campo"
+                      className="text-sm"
+                    />
+                    <Input
+                      value={field.key}
+                      onChange={(e) => updateField(index, { key: e.target.value })}
+                      placeholder="Chave (auto)"
+                      className="text-sm font-mono"
+                    />
+                    <Select
+                      value={field.type ?? 'text'}
+                      onValueChange={(val) => updateField(index, { type: val ?? 'text' })}
+                    >
+                      <SelectTrigger className="text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="text">Texto</SelectItem>
+                        <SelectItem value="textarea">Texto longo</SelectItem>
+                        <SelectItem value="number">Numero</SelectItem>
+                        <SelectItem value="email">E-mail</SelectItem>
+                        <SelectItem value="phone">Telefone</SelectItem>
+                        <SelectItem value="url">URL</SelectItem>
+                        <SelectItem value="currency">Moeda (R$)</SelectItem>
+                        <SelectItem value="date">Data</SelectItem>
+                        <SelectItem value="file">Arquivo</SelectItem>
+                        <SelectItem value="select">Selecao</SelectItem>
+                        <SelectItem value="checkbox">Checkbox</SelectItem>
+                        <SelectItem value="wysiwyg">Texto rico (WYSIWYG)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={field.required ?? false}
+                          onChange={(e) => updateField(index, { required: e.target.checked })}
+                          className="rounded"
+                        />
+                        Obrigatorio
+                      </label>
+                    </div>
                   </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => removeField(index)}
+                  >
+                    <Trash2 className="size-3.5 text-destructive" />
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => removeField(index)}
-                >
-                  <Trash2 className="size-3.5 text-destructive" />
-                </Button>
+                {/* Placeholder input */}
+                <Input
+                  value={field.placeholder ?? ''}
+                  onChange={(e) => updateField(index, { placeholder: e.target.value })}
+                  placeholder="Placeholder / dica para o usuario"
+                  className="text-xs"
+                />
+                {/* Options for select type */}
+                {field.type === 'select' && (
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-medium text-muted-foreground">Opcoes (uma por linha)</p>
+                    <Textarea
+                      value={(field.options ?? []).join('\n')}
+                      onChange={(e) => updateField(index, {
+                        options: e.target.value.split('\n').filter((o) => o.trim()),
+                      })}
+                      placeholder="Opcao 1&#10;Opcao 2&#10;Opcao 3"
+                      rows={3}
+                      className="text-xs font-mono"
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>

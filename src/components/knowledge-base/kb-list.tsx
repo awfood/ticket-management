@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import {
   Search,
   Plus,
@@ -10,6 +10,9 @@ import {
   Tag,
   Calendar,
   Sparkles,
+  ShieldCheck,
+  ShieldAlert,
+  ShieldQuestion,
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { Card, CardContent } from '@/components/ui/card'
@@ -28,20 +31,59 @@ import type { KnowledgeBaseArticle, PaginatedResponse } from '@/types'
 
 const CATEGORIES = [
   { value: '', label: 'Todas categorias' },
-  { value: 'geral', label: 'Geral' },
-  { value: 'integracao', label: 'Integracao' },
+  { value: 'geral', label: 'Primeiros Passos' },
+  { value: 'cardapio', label: 'Cardapio e Produtos' },
+  { value: 'integracao', label: 'Integracoes' },
+  { value: 'pdv', label: 'PDV e Vendas' },
+  { value: 'financeiro', label: 'Financeiro' },
   { value: 'fiscal', label: 'Fiscal' },
-  { value: 'pagamento', label: 'Pagamento' },
-  { value: 'cardapio', label: 'Cardapio' },
+  { value: 'pagamento', label: 'Pagamentos' },
+  { value: 'estoque', label: 'Estoque' },
+  { value: 'delivery', label: 'Delivery' },
+  { value: 'cadastros', label: 'Cadastros' },
+  { value: 'promocoes', label: 'Promocoes' },
+  { value: 'relatorios', label: 'Relatorios' },
+  { value: 'configuracao', label: 'Configuracoes' },
+  { value: 'troubleshooting', label: 'Problemas' },
   { value: 'pedidos', label: 'Pedidos' },
-  { value: 'configuracao', label: 'Configuracao' },
-  { value: 'troubleshooting', label: 'Troubleshooting' },
 ]
+
+const SCORE_FILTERS = [
+  { value: '', label: 'Qualquer score' },
+  { value: '90-100', label: 'Alto (90-100)' },
+  { value: '70-89', label: 'Medio (70-89)' },
+  { value: '50-69', label: 'Baixo (50-69)' },
+  { value: '0-49', label: 'Critico (0-49)' },
+]
+
+function getScoreColor(score: number | null): string {
+  if (score === null) return 'text-muted-foreground'
+  if (score >= 90) return 'text-green-600'
+  if (score >= 70) return 'text-yellow-600'
+  if (score >= 50) return 'text-orange-500'
+  return 'text-red-500'
+}
+
+function getScoreIcon(score: number | null) {
+  if (score === null) return null
+  if (score >= 70) return ShieldCheck
+  if (score >= 50) return ShieldAlert
+  return ShieldQuestion
+}
+
+function getScoreLabel(score: number | null): string {
+  if (score === null) return ''
+  if (score >= 90) return 'Alta confianca'
+  if (score >= 70) return 'Media confianca'
+  if (score >= 50) return 'Baixa confianca'
+  return 'Revisao necessaria'
+}
 
 async function fetchArticles(
   search: string,
   category: string,
   published: string,
+  scoreFilter: string,
   page: number
 ): Promise<PaginatedResponse<KnowledgeBaseArticle>> {
   const params = new URLSearchParams({
@@ -51,6 +93,11 @@ async function fetchArticles(
   if (search) params.set('search', search)
   if (category) params.set('category', category)
   if (published) params.set('published', published)
+  if (scoreFilter) {
+    const [min, max] = scoreFilter.split('-')
+    params.set('min_score', min)
+    params.set('max_score', max)
+  }
 
   const res = await fetch(`/api/knowledge-base?${params}`)
   if (!res.ok) throw new Error('Erro ao carregar artigos')
@@ -88,18 +135,54 @@ function formatDate(dateStr: string): string {
 export function KBList() {
   const user = useUser()
   const router = useRouter()
-  const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('')
-  const [published, setPublished] = useState('')
-  const [page, setPage] = useState(1)
-  const [semanticMode, setSemanticMode] = useState(false)
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Read initial values from URL
+  const [search, setSearch] = useState(searchParams.get('search') ?? '')
+  const [category, setCategory] = useState(searchParams.get('category') ?? '')
+  const [published, setPublished] = useState(searchParams.get('published') ?? '')
+  const [scoreFilter, setScoreFilter] = useState(searchParams.get('score') ?? '')
+  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1', 10))
+  const [semanticMode, setSemanticMode] = useState(searchParams.get('semantic') === '1')
+
+  // Sync filters to URL without full page reload
+  const updateURL = useCallback((updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+    }
+    // Remove page=1 from URL (default)
+    if (params.get('page') === '1') params.delete('page')
+    const qs = params.toString()
+    router.replace(`${pathname}${qs ? '?' + qs : ''}`, { scroll: false })
+  }, [searchParams, pathname, router])
+
+  // Debounced URL sync for search input
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const updateSearchURL = useCallback((value: string) => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => {
+      updateURL({ search: value, page: '' })
+    }, 500)
+  }, [updateURL])
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    }
+  }, [])
 
   const {
     data: articlesResult,
     isLoading: articlesLoading,
   } = useQuery({
-    queryKey: ['kb-articles', search, category, published, page],
-    queryFn: () => fetchArticles(search, category, published, page),
+    queryKey: ['kb-articles', search, category, published, scoreFilter, page],
+    queryFn: () => fetchArticles(search, category, published, scoreFilter, page),
     enabled: !semanticMode,
   })
 
@@ -116,8 +199,10 @@ export function KBList() {
   const handleSearch = () => {
     if (semanticMode && search.trim()) {
       runSemanticSearch()
+      updateURL({ search, semantic: '1', page: '' })
     } else {
       setPage(1)
+      updateURL({ search, page: '' })
     }
   }
 
@@ -155,7 +240,7 @@ export function KBList() {
           <Input
             placeholder="Buscar artigos..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); updateSearchURL(e.target.value) }}
             onKeyDown={handleKeyDown}
             className="pl-9"
           />
@@ -164,14 +249,14 @@ export function KBList() {
         <Button
           variant={semanticMode ? 'default' : 'outline'}
           size="sm"
-          onClick={() => setSemanticMode(!semanticMode)}
+          onClick={() => { const next = !semanticMode; setSemanticMode(next); updateURL({ semantic: next ? '1' : '' }) }}
           title="Busca semantica com IA"
         >
           <Sparkles className="size-3.5" data-icon="inline-start" />
           Semantica
         </Button>
 
-        <Select value={category} onValueChange={(v) => setCategory(v ?? '')}>
+        <Select value={category} onValueChange={(v) => { const val = v ?? ''; setCategory(val); setPage(1); updateURL({ category: val, page: '' }) }}>
           <SelectTrigger>
             <SelectValue placeholder="Todas categorias" />
           </SelectTrigger>
@@ -185,7 +270,7 @@ export function KBList() {
         </Select>
 
         {user.isInternal && (
-          <Select value={published} onValueChange={(v) => setPublished(v ?? '')}>
+          <Select value={published} onValueChange={(v) => { const val = v ?? ''; setPublished(val); setPage(1); updateURL({ published: val, page: '' }) }}>
             <SelectTrigger>
               <SelectValue placeholder="Todos status" />
             </SelectTrigger>
@@ -193,6 +278,21 @@ export function KBList() {
               <SelectItem value="">Todos</SelectItem>
               <SelectItem value="true">Publicados</SelectItem>
               <SelectItem value="false">Rascunhos</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
+        {user.isInternal && (
+          <Select value={scoreFilter} onValueChange={(v) => { const val = v ?? ''; setScoreFilter(val); setPage(1); updateURL({ score: val, page: '' }) }}>
+            <SelectTrigger>
+              <SelectValue placeholder="Qualquer score" />
+            </SelectTrigger>
+            <SelectContent>
+              {SCORE_FILTERS.map((sf) => (
+                <SelectItem key={sf.value} value={sf.value}>
+                  {sf.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         )}
@@ -278,9 +378,17 @@ export function KBList() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-1">
-                    <Calendar className="size-2.5" />
-                    {formatDate(article.updated_at)}
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <Calendar className="size-2.5" />
+                      {formatDate(article.updated_at)}
+                    </div>
+                    {article.confidence_score !== null && article.confidence_score !== undefined && (
+                      <div className={`flex items-center gap-1 text-[10px] font-medium ${getScoreColor(article.confidence_score)}`} title={article.confidence_notes || getScoreLabel(article.confidence_score)}>
+                        {(() => { const Icon = getScoreIcon(article.confidence_score); return Icon ? <Icon className="size-3" /> : null; })()}
+                        {article.confidence_score}%
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -296,7 +404,7 @@ export function KBList() {
             variant="outline"
             size="sm"
             disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() => { const p = page - 1; setPage(p); updateURL({ page: String(p) }) }}
           >
             Anterior
           </Button>
@@ -307,7 +415,7 @@ export function KBList() {
             variant="outline"
             size="sm"
             disabled={page >= articlesResult.total_pages}
-            onClick={() => setPage(page + 1)}
+            onClick={() => { const p = page + 1; setPage(p); updateURL({ page: String(p) }) }}
           >
             Proxima
           </Button>

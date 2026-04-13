@@ -21,6 +21,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { TicketStatusBadge } from './ticket-status-badge'
+import { DevPromptDialog } from './dev-prompt-dialog'
+import type { DevPromptConfig } from './dev-prompt-dialog'
 import { useUser } from '@/hooks/use-user'
 import type { TicketAnalysis } from '@/lib/ai/ticket-analyzer'
 import type { DevPromptResult } from '@/lib/ai/dev-prompt-generator'
@@ -42,6 +44,7 @@ export function TicketAIPanel({ ticketId }: TicketAIPanelProps) {
   const [expanded, setExpanded] = useState(true)
   const [devPromptResult, setDevPromptResult] = useState<DevPromptResult | null>(null)
   const [devPromptCopied, setDevPromptCopied] = useState(false)
+  const [devPromptDialogOpen, setDevPromptDialogOpen] = useState(false)
   const hasDevPermission = user.permissions.includes('ai.dev_prompt') || user.role === 'super_admin'
 
   // Fetch previous analyses
@@ -59,11 +62,15 @@ export function TicketAIPanel({ ticketId }: TicketAIPanelProps) {
   })
 
   const runDevPrompt = useMutation({
-    mutationFn: async (): Promise<{ dev_prompt: DevPromptResult }> => {
+    mutationFn: async (config: DevPromptConfig): Promise<{ dev_prompt: DevPromptResult }> => {
       const res = await fetch(`/api/tickets/${ticketId}/ai`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'dev_prompt' }),
+        body: JSON.stringify({
+          type: 'dev_prompt',
+          extra_notes: config.extra_notes,
+          ai_has_context: config.ai_has_context,
+        }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -77,6 +84,11 @@ export function TicketAIPanel({ ticketId }: TicketAIPanelProps) {
     },
     onError: (err: Error) => toast.error(err.message),
   })
+
+  function handleDevPromptConfirm(config: DevPromptConfig) {
+    setDevPromptDialogOpen(false)
+    runDevPrompt.mutate(config)
+  }
 
   const runAnalysis = useMutation({
     mutationFn: async (): Promise<AnalysisResponse> => {
@@ -145,7 +157,7 @@ export function TicketAIPanel({ ticketId }: TicketAIPanelProps) {
               variant="outline"
               size="sm"
               className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950"
-              onClick={() => runDevPrompt.mutate()}
+              onClick={() => setDevPromptDialogOpen(true)}
               disabled={runDevPrompt.isPending}
             >
               {runDevPrompt.isPending ? (
@@ -352,6 +364,13 @@ export function TicketAIPanel({ ticketId }: TicketAIPanelProps) {
           )}
         </div>
       )}
+
+      {/* Dialog de configuracao do Prompt Dev */}
+      <DevPromptDialog
+        open={devPromptDialogOpen}
+        onOpenChange={setDevPromptDialogOpen}
+        onConfirm={handleDevPromptConfirm}
+      />
     </div>
   )
 }

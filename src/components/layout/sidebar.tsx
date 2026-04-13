@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
   Ticket,
@@ -23,6 +23,16 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -84,10 +94,32 @@ function getInitials(name: string): string {
 
 export function Sidebar({ user }: { user: SidebarUser }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(
     pathname.startsWith('/settings')
   )
+  const [pendingHref, setPendingHref] = useState<string | null>(null)
+
+  const isInWizard = pathname === '/tickets/new'
+
+  const handleNavClick = useCallback(
+    (href: string, e: React.MouseEvent) => {
+      if (isInWizard && href !== '/tickets/new') {
+        e.preventDefault()
+        setPendingHref(href)
+      }
+    },
+    [isInWizard]
+  )
+
+  const confirmNavigation = useCallback(() => {
+    const href = pendingHref
+    setPendingHref(null)
+    if (href) {
+      router.push(href)
+    }
+  }, [pendingHref, router])
 
   function isActive(href: string) {
     if (href === '/dashboard') {
@@ -97,6 +129,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
   }
 
   return (
+    <>
     <aside
       className={cn(
         'flex h-screen flex-col border-r border-border bg-sidebar transition-[width] duration-200',
@@ -159,6 +192,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
                             <Link
                               key={child.href}
                               href={child.href}
+                              onClick={(e) => handleNavClick(child.href, e)}
                               className={cn(
                                 'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
                                 childActive
@@ -180,6 +214,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
               const linkContent = (
                 <Link
                   href={item.href}
+                  onClick={(e) => handleNavClick(item.href, e)}
                   className={cn(
                     'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors',
                     active
@@ -275,5 +310,27 @@ export function Sidebar({ user }: { user: SidebarUser }) {
         )}
       </div>
     </aside>
+
+    {/* Alert when leaving wizard */}
+    <AlertDialog open={!!pendingHref} onOpenChange={(open) => !open && setPendingHref(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Sair da criacao de ticket?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Voce esta no meio da criacao de um ticket. Se sair agora, todas as informacoes preenchidas serao perdidas.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Continuar editando</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-white hover:bg-destructive/90"
+            onClick={confirmNavigation}
+          >
+            Sair e descartar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   )
 }

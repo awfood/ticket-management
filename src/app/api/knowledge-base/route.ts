@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') ?? ''
     const category = searchParams.get('category')
     const published = searchParams.get('published')
+    const minScore = searchParams.get('min_score')
+    const maxScore = searchParams.get('max_score')
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
     const perPage = Math.min(
       100,
@@ -62,6 +64,12 @@ export async function GET(request: NextRequest) {
     if (!profile?.is_internal) {
       // External users see only published articles
       query = query.eq('is_published', true)
+    }
+
+    // Score filters (internal only)
+    if (profile?.is_internal) {
+      if (minScore) query = query.gte('confidence_score', parseInt(minScore, 10))
+      if (maxScore) query = query.lte('confidence_score', parseInt(maxScore, 10))
     }
 
     query = query

@@ -273,6 +273,9 @@ export interface AISettings {
   updated_at: string
 }
 
+export type KBReviewStatus = 'pending_review' | 'approved' | 'rejected' | 'needs_edit'
+export type KBSource = 'manual' | 'auto_generated' | 'imported'
+
 export interface KnowledgeBaseArticle {
   id: string
   title: string
@@ -280,14 +283,46 @@ export interface KnowledgeBaseArticle {
   content_html: string | null
   category: string | null
   tags: string[]
+  slug: string | null
+  sort_order: number
   is_published: boolean
   embedding: number[] | null
+  review_status: KBReviewStatus
+  review_notes: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  source: KBSource
+  helpful_count: number
+  not_helpful_count: number
+  confidence_score: number | null
+  confidence_notes: string | null
   created_by: string
   created_at: string
   updated_at: string
   deleted_at: string | null
   // Relations
   author?: Profile
+  reviewer?: Profile
+}
+
+export interface KnowledgeBaseFeedback {
+  id: string
+  article_id: string
+  is_helpful: boolean
+  comment: string | null
+  user_identifier: string | null
+  created_at: string
+}
+
+export interface KnowledgeBaseRevision {
+  id: string
+  article_id: string
+  title: string
+  content: string
+  content_html: string | null
+  changed_by: string | null
+  change_summary: string | null
+  created_at: string
 }
 
 export interface AIAnalysisResult {

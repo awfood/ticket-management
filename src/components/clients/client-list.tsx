@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import {
   Building2,
@@ -212,10 +213,40 @@ function ExpandableRow({ org }: { org: OrgWithCounts }) {
 
 export function ClientListClient() {
   const user = useUser()
-  const [search, setSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const [search, setSearch] = useState(searchParams.get('search') ?? '')
+  const [typeFilter, setTypeFilter] = useState<string>(searchParams.get('type') ?? 'all')
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1', 10))
+
+  const updateURL = useCallback((updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [key, value] of Object.entries(updates)) {
+      if (value && value !== 'all') {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+    }
+    if (params.get('page') === '1') params.delete('page')
+    const qs = params.toString()
+    router.replace(`${pathname}${qs ? '?' + qs : ''}`, { scroll: false })
+  }, [searchParams, pathname, router])
+
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const updateSearchURL = useCallback((value: string) => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => {
+      updateURL({ search: value, page: '' })
+    }, 500)
+  }, [updateURL])
+
+  useEffect(() => {
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current) }
+  }, [])
 
   const queryParams = new URLSearchParams()
   queryParams.set('page', String(page))
@@ -268,6 +299,7 @@ export function ClientListClient() {
               onChange={(e) => {
                 setSearch(e.target.value)
                 setPage(1)
+                updateSearchURL(e.target.value)
               }}
               className="pl-8"
             />
@@ -275,8 +307,10 @@ export function ClientListClient() {
           <Select
             value={typeFilter}
             onValueChange={(val: string | null) => {
-              setTypeFilter(val ?? 'all')
+              const v = val ?? 'all'
+              setTypeFilter(v)
               setPage(1)
+              updateURL({ type: v, page: '' })
             }}
           >
             <SelectTrigger className="w-44">
@@ -348,7 +382,7 @@ export function ClientListClient() {
                 variant="outline"
                 size="sm"
                 disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
+                onClick={() => { const p = page - 1; setPage(p); updateURL({ page: String(p) }) }}
               >
                 Anterior
               </Button>
@@ -356,7 +390,7 @@ export function ClientListClient() {
                 variant="outline"
                 size="sm"
                 disabled={page >= totalPages}
-                onClick={() => setPage(page + 1)}
+                onClick={() => { const p = page + 1; setPage(p); updateURL({ page: String(p) }) }}
               >
                 Proximo
               </Button>

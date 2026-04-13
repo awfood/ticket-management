@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Mail,
@@ -91,10 +92,40 @@ function getInternalRole(user: UserWithMemberships): UserRole | null {
 export function UsersListClient() {
   const currentUser = useUser()
   const queryClient = useQueryClient()
-  const [activeTab, setActiveTab] = useState('internal')
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') ?? 'internal')
+  const [search, setSearch] = useState(searchParams.get('search') ?? '')
+  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1', 10))
   const [inviteOpen, setInviteOpen] = useState(false)
+
+  const updateURL = useCallback((updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [key, value] of Object.entries(updates)) {
+      if (value && !(key === 'tab' && value === 'internal')) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+    }
+    if (params.get('page') === '1') params.delete('page')
+    const qs = params.toString()
+    router.replace(`${pathname}${qs ? '?' + qs : ''}`, { scroll: false })
+  }, [searchParams, pathname, router])
+
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const updateSearchURL = useCallback((value: string) => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => {
+      updateURL({ search: value, page: '' })
+    }, 500)
+  }, [updateURL])
+
+  useEffect(() => {
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current) }
+  }, [])
   const [permManagerOpen, setPermManagerOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserWithMemberships | null>(null)
 
@@ -151,6 +182,7 @@ export function UsersListClient() {
         onValueChange={(val) => {
           setActiveTab(val)
           setPage(1)
+          updateURL({ tab: val, page: '' })
         }}
       >
         <TabsList>
@@ -168,6 +200,7 @@ export function UsersListClient() {
               onChange={(e) => {
                 setSearch(e.target.value)
                 setPage(1)
+                updateSearchURL(e.target.value)
               }}
               className="pl-8"
             />
@@ -282,7 +315,7 @@ export function UsersListClient() {
                     variant="outline"
                     size="sm"
                     disabled={page <= 1}
-                    onClick={() => setPage(page - 1)}
+                    onClick={() => { const p = page - 1; setPage(p); updateURL({ page: String(p) }) }}
                   >
                     Anterior
                   </Button>
@@ -290,7 +323,7 @@ export function UsersListClient() {
                     variant="outline"
                     size="sm"
                     disabled={page >= totalPages}
-                    onClick={() => setPage(page + 1)}
+                    onClick={() => { const p = page + 1; setPage(p); updateURL({ page: String(p) }) }}
                   >
                     Proximo
                   </Button>
@@ -407,7 +440,7 @@ export function UsersListClient() {
                     variant="outline"
                     size="sm"
                     disabled={page <= 1}
-                    onClick={() => setPage(page - 1)}
+                    onClick={() => { const p = page - 1; setPage(p); updateURL({ page: String(p) }) }}
                   >
                     Anterior
                   </Button>
@@ -415,7 +448,7 @@ export function UsersListClient() {
                     variant="outline"
                     size="sm"
                     disabled={page >= totalPages}
-                    onClick={() => setPage(page + 1)}
+                    onClick={() => { const p = page + 1; setPage(p); updateURL({ page: String(p) }) }}
                   >
                     Proximo
                   </Button>

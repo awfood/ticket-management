@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ao menos um scope obrigatorio' }, { status: 400 })
   }
 
-  const validScopes = ['tickets.read', 'tickets.write', 'comments.write', 'orgs.read', 'orgs.write']
+  const validScopes = ['tickets.read', 'tickets.write', 'comments.write', 'orgs.read', 'orgs.write', 'kb.read', 'kb.write']
   const invalidScopes = scopes.filter((s: string) => !validScopes.includes(s))
   if (invalidScopes.length > 0) {
     return NextResponse.json(

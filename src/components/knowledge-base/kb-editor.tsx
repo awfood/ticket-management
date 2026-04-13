@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
+import { marked } from 'marked'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -17,7 +18,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { RichTextEditor, RichTextViewer } from '@/components/shared/rich-text-editor'
 import {
   Select,
   SelectContent,
@@ -33,6 +34,7 @@ import type { KnowledgeBaseArticle } from '@/types'
 const articleSchema = z.object({
   title: z.string().min(3, 'Titulo deve ter pelo menos 3 caracteres'),
   content: z.string().min(10, 'Conteudo deve ter pelo menos 10 caracteres'),
+  content_html: z.string().nullable().optional(),
   category: z.string().optional(),
   tags: z.array(z.string()),
   is_published: z.boolean(),
@@ -41,14 +43,21 @@ const articleSchema = z.object({
 type ArticleFormData = z.infer<typeof articleSchema>
 
 const CATEGORIES = [
-  { value: 'geral', label: 'Geral' },
-  { value: 'integracao', label: 'Integracao' },
-  { value: 'fiscal', label: 'Fiscal' },
-  { value: 'pagamento', label: 'Pagamento' },
-  { value: 'cardapio', label: 'Cardapio' },
+  { value: 'geral', label: 'Primeiros Passos' },
+  { value: 'cardapio', label: 'Cardapio e Produtos' },
+  { value: 'integracao', label: 'Integracoes' },
+  { value: 'pdv', label: 'PDV e Vendas' },
+  { value: 'financeiro', label: 'Financeiro' },
+  { value: 'fiscal', label: 'Fiscal (NFC-e / NF-e)' },
+  { value: 'pagamento', label: 'Meios de Pagamento' },
+  { value: 'estoque', label: 'Estoque' },
+  { value: 'delivery', label: 'Delivery' },
+  { value: 'cadastros', label: 'Cadastros' },
+  { value: 'promocoes', label: 'Promocoes' },
+  { value: 'relatorios', label: 'Relatorios' },
+  { value: 'configuracao', label: 'Configuracoes' },
+  { value: 'troubleshooting', label: 'Solucao de Problemas' },
   { value: 'pedidos', label: 'Pedidos' },
-  { value: 'configuracao', label: 'Configuracao' },
-  { value: 'troubleshooting', label: 'Troubleshooting' },
 ]
 
 interface KBEditorProps {
@@ -63,11 +72,26 @@ export function KBEditor({ article }: KBEditorProps) {
 
   const isEditing = !!article
 
+  // Se o artigo tem content mas não tem content_html, converte Markdown → HTML
+  const initialHtml = useMemo(() => {
+    if (article?.content_html) return article.content_html
+    if (article?.content) {
+      // Detecta se o conteúdo parece ser Markdown (tem headers, listas, bold, etc.)
+      const md = article.content
+      const looksLikeMarkdown = /^#{1,6}\s|^\*\s|^\-\s|^\d+\.\s|\*\*|__|\[.*\]\(.*\)|```/m.test(md)
+      if (looksLikeMarkdown) {
+        return marked.parse(md, { async: false }) as string
+      }
+    }
+    return ''
+  }, [article?.content, article?.content_html])
+
   const form = useForm<ArticleFormData>({
     resolver: zodResolver(articleSchema) as never,
     defaultValues: {
       title: article?.title ?? '',
       content: article?.content ?? '',
+      content_html: article?.content_html ?? null,
       category: article?.category ?? '',
       tags: article?.tags ?? [],
       is_published: article?.is_published ?? false,
@@ -102,7 +126,7 @@ export function KBEditor({ article }: KBEditorProps) {
         body: JSON.stringify({
           title: data.title,
           content: data.content,
-          content_html: null,
+          content_html: data.content_html || null,
           category: data.category || null,
           tags: data.tags,
           is_published: data.is_published,
@@ -254,20 +278,27 @@ export function KBEditor({ article }: KBEditorProps) {
                 <CardTitle>{watchTitle || 'Sem titulo'}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap">
-                  {watchContent || 'Sem conteudo'}
-                </div>
+                {watch('content_html') ? (
+                  <RichTextViewer content={watch('content_html') ?? null} />
+                ) : (
+                  <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap">
+                    {watchContent || 'Sem conteudo'}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-1.5">
-              <Label htmlFor="content">Conteudo</Label>
-              <Textarea
-                id="content"
+              <Label>Conteudo</Label>
+              <RichTextEditor
+                content={initialHtml || article?.content || ''}
+                onChange={(html, text) => {
+                  setValue('content', text, { shouldValidate: true })
+                  setValue('content_html', html)
+                }}
                 placeholder="Escreva o conteudo do artigo..."
-                rows={20}
-                {...register('content')}
-                className={`font-mono text-sm ${errors.content ? 'border-red-500' : ''}`}
+                minHeight="400px"
+                className={errors.content ? 'border-red-500' : ''}
               />
               {errors.content && (
                 <p className="text-xs text-red-500">

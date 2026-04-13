@@ -81,6 +81,8 @@ const ALL_SCOPES = [
   { value: 'comments.write', label: 'Comentar em tickets', description: 'Adicionar comentarios em tickets' },
   { value: 'orgs.read', label: 'Ler organizacoes', description: 'Listar e visualizar organizacoes' },
   { value: 'orgs.write', label: 'Criar organizacoes', description: 'Criar novas organizacoes (apenas keys globais)' },
+  { value: 'kb.read', label: 'Ler base de conhecimento', description: 'Listar, visualizar e buscar artigos da base de conhecimento' },
+  { value: 'kb.write', label: 'Gerenciar base de conhecimento', description: 'Criar, editar, revisar e importar artigos' },
 ]
 
 function timeAgo(dateStr: string | null): string {
