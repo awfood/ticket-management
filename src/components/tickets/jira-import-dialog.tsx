@@ -191,7 +191,7 @@ export function JiraImportDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Download className="size-4 mr-1.5" />
           Importar do Jira
