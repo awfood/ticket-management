@@ -219,8 +219,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
     }
 
-    // Soft delete
-    const { error } = await supabase
+    // Soft delete using service client to bypass RLS
+    const serviceClient = await createServiceClient()
+    const { error } = await serviceClient
       .from('tickets')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)

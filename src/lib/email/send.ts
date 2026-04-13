@@ -4,6 +4,8 @@ import {
   type TicketStatusChangedParams,
   dailyDigestHtml,
   type DailyDigestParams,
+  inviteEmailHtml,
+  type InviteEmailParams,
 } from './templates'
 
 interface SendResult {
@@ -54,6 +56,14 @@ export async function sendDailyDigest(
   const timeLabel = params.period === 'morning' ? 'Manha' : 'Tarde'
   const subject = `Resumo ${timeLabel} - ${params.totalOpen} tickets abertos`
   return sendEmail(to, subject, dailyDigestHtml(params))
+}
+
+export async function sendInviteEmail(
+  to: string,
+  params: InviteEmailParams
+): Promise<SendResult> {
+  const subject = `Convite para AWFood Suporte — ${params.orgName}`
+  return sendEmail(to, subject, inviteEmailHtml(params))
 }
 
 export async function sendBatchEmails(

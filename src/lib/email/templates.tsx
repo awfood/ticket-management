@@ -216,3 +216,54 @@ export function dailyDigestHtml(p: DailyDigestParams): string {
     </div>
   `)
 }
+
+// -----------------------------------------------------------
+// 3. Invite Email
+// -----------------------------------------------------------
+export interface InviteEmailParams {
+  recipientName: string
+  recipientEmail: string
+  orgName: string
+  inviterName: string
+  role: string
+  inviteLink: string
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  super_admin: 'Super Administrador',
+  admin: 'Administrador',
+  agent: 'Agente',
+  viewer: 'Visualizador',
+  org_admin: 'Administrador da Organizacao',
+  org_member: 'Membro',
+}
+
+export function inviteEmailHtml(p: InviteEmailParams): string {
+  const roleLabel = ROLE_LABELS[p.role] ?? p.role
+  return baseLayout(`
+    <h2 style="margin:0 0 4px;font-size:16px;color:${COLORS.primary};">Voce foi convidado!</h2>
+    <p style="margin:0 0 16px;font-size:14px;color:${COLORS.muted};">
+      Ola ${p.recipientName}, <strong>${p.inviterName}</strong> convidou voce para acessar a plataforma de suporte da AWFood.
+    </p>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+      <tr>
+        <td style="padding:8px 0;font-size:13px;color:${COLORS.muted};width:120px;">Organizacao</td>
+        <td style="padding:8px 0;font-size:13px;font-weight:600;">${p.orgName}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-size:13px;color:${COLORS.muted};">Perfil</td>
+        <td style="padding:8px 0;font-size:13px;font-weight:600;">${roleLabel}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-size:13px;color:${COLORS.muted};">Email</td>
+        <td style="padding:8px 0;font-size:13px;">${p.recipientEmail}</td>
+      </tr>
+    </table>
+    <div style="text-align:center;margin:24px 0 16px;">
+      <a href="${p.inviteLink}" style="display:inline-block;padding:12px 32px;background:${COLORS.primary};color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">Aceitar convite</a>
+    </div>
+    <p style="font-size:12px;color:${COLORS.muted};text-align:center;margin:0;">
+      Se voce nao esperava receber este convite, pode ignorar este email.
+    </p>
+  `)
+}

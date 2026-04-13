@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { sendInviteEmail } from '@/lib/email/send'
 
 export async function GET(
   _request: NextRequest,
@@ -164,28 +165,63 @@ export async function POST(
     return NextResponse.json(member, { status: 201 })
   }
 
-  // User does not exist: send invite via Supabase Auth
-  const { data: inviteData, error: inviteError } =
-    await serviceClient.auth.admin.inviteUserByEmail(email, {
-      data: {
-        full_name: full_name || email.split('@')[0],
-        pending_org_id: id,
-        pending_org_role: role,
+  // User does not exist: generate invite link and send via Resend
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const recipientName = full_name || email.split('@')[0]
+
+  const { data: linkData, error: linkError } =
+    await serviceClient.auth.admin.generateLink({
+      type: 'invite',
+      email,
+      options: {
+        data: {
+          full_name: recipientName,
+          pending_org_id: id,
+          pending_org_role: role,
+        },
+        redirectTo: `${appUrl}/auth/callback`,
       },
     })
 
-  if (inviteError) {
+  if (linkError || !linkData?.properties?.action_link) {
     return NextResponse.json(
-      { error: `Erro ao enviar convite: ${inviteError.message}` },
+      { error: `Erro ao gerar convite: ${linkError?.message ?? 'Link nao gerado'}` },
       { status: 500 }
     )
+  }
+
+  // Fetch org name and inviter name for the email
+  const { data: orgData } = await supabase
+    .from('organizations')
+    .select('name')
+    .eq('id', id)
+    .single()
+
+  const { data: inviterProfile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .single()
+
+  const emailResult = await sendInviteEmail(email, {
+    recipientName,
+    recipientEmail: email,
+    orgName: orgData?.name ?? 'AWFood',
+    inviterName: inviterProfile?.full_name ?? 'Equipe AWFood',
+    role,
+    inviteLink: linkData.properties.action_link,
+  })
+
+  if (!emailResult.success) {
+    console.error('[invite] Erro ao enviar email via Resend:', emailResult.error)
+    // O convite no Supabase Auth ja foi criado, entao retorna sucesso parcial
   }
 
   return NextResponse.json(
     {
       message: 'Convite enviado por email',
       invited_email: email,
-      invite_id: inviteData.user?.id,
+      invite_id: linkData.user?.id,
     },
     { status: 201 }
   )
