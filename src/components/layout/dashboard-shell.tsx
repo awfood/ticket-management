@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sheet'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Header } from '@/components/layout/header'
+import { NavigationProgress } from '@/components/layout/navigation-progress'
 import { UserProvider } from '@/hooks/use-user'
 import type { UserContext } from '@/types'
 
@@ -42,6 +43,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
 
   return (
     <UserProvider value={user}>
+      <NavigationProgress />
       <div className="flex h-screen overflow-hidden">
         {/* Desktop sidebar */}
         <div className="hidden lg:block">
