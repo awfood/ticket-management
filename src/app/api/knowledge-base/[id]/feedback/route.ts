@@ -67,7 +67,7 @@ export async function POST(
     const counterField = is_helpful ? 'helpful_count' : 'not_helpful_count'
     const { data: current } = await supabase
       .from('knowledge_base_articles')
-      .select(counterField)
+      .select('helpful_count, not_helpful_count')
       .eq('id', id)
       .single()
 
