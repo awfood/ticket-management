@@ -45,7 +45,13 @@ import { TicketComments } from './ticket-comments'
 import { TicketHistory } from './ticket-history'
 import { TicketAIPanel } from './ticket-ai-panel'
 import { TicketExternalLinks } from './ticket-external-links'
-import { RichTextEditor, RichTextViewer } from '@/components/shared/rich-text-editor'
+import dynamic from 'next/dynamic'
+import { RichTextViewer } from '@/components/shared/rich-text-editor'
+
+const RichTextEditor = dynamic(
+  () => import('@/components/shared/rich-text-editor').then((m) => ({ default: m.RichTextEditor })),
+  { loading: () => <div className="h-28 rounded-lg bg-muted animate-pulse" /> }
+)
 import { Input } from '@/components/ui/input'
 import { useUser } from '@/hooks/use-user'
 import type {

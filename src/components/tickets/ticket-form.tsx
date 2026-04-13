@@ -10,7 +10,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { RichTextEditor } from '@/components/shared/rich-text-editor'
+import dynamic from 'next/dynamic'
+
+const RichTextEditor = dynamic(
+  () => import('@/components/shared/rich-text-editor').then((m) => ({ default: m.RichTextEditor })),
+  { loading: () => <div className="h-40 rounded-lg bg-muted animate-pulse" /> }
+)
 import {
   Select,
   SelectContent,

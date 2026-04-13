@@ -18,7 +18,13 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { RichTextEditor, RichTextViewer } from '@/components/shared/rich-text-editor'
+import dynamic from 'next/dynamic'
+import { RichTextViewer } from '@/components/shared/rich-text-editor'
+
+const RichTextEditor = dynamic(
+  () => import('@/components/shared/rich-text-editor').then((m) => ({ default: m.RichTextEditor })),
+  { loading: () => <div className="h-64 rounded-lg bg-muted animate-pulse" /> }
+)
 import {
   Select,
   SelectContent,

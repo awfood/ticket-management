@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useQuery } from '@tanstack/react-query'
 import {
   Inbox,
@@ -12,15 +13,29 @@ import {
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { StatCard } from '@/components/dashboard/stat-card'
-import {
-  TicketsByStatusChart,
-  TicketsByPriorityChart,
-  TicketsOverTimeChart,
-  ResolutionTimeChart,
-} from '@/components/dashboard/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+
+// Lazy load Recharts (~40-50KB) — so carrega quando a area de graficos renderiza
+const ChartSkeleton = () => <Skeleton className="h-48 w-full rounded" />
+
+const TicketsByStatusChart = dynamic(
+  () => import('@/components/dashboard/charts').then((m) => ({ default: m.TicketsByStatusChart })),
+  { loading: ChartSkeleton }
+)
+const TicketsByPriorityChart = dynamic(
+  () => import('@/components/dashboard/charts').then((m) => ({ default: m.TicketsByPriorityChart })),
+  { loading: ChartSkeleton }
+)
+const TicketsOverTimeChart = dynamic(
+  () => import('@/components/dashboard/charts').then((m) => ({ default: m.TicketsOverTimeChart })),
+  { loading: ChartSkeleton }
+)
+const ResolutionTimeChart = dynamic(
+  () => import('@/components/dashboard/charts').then((m) => ({ default: m.ResolutionTimeChart })),
+  { loading: ChartSkeleton }
+)
 import { Badge } from '@/components/ui/badge'
 import type { DashboardStats, Ticket } from '@/types'
 
@@ -66,17 +81,20 @@ export function DashboardHome() {
   } = useQuery({
     queryKey: ['dashboard-stats', '30d'],
     queryFn: () => fetchStats('30d'),
+    staleTime: 10 * 60 * 1000, // stats mudam pouco — 10 min
   })
 
   const { data: unassigned, isLoading: unassignedLoading } = useQuery({
     queryKey: ['unassigned-tickets'],
     queryFn: fetchUnassigned,
     enabled: user.isInternal,
+    staleTime: 3 * 60 * 1000,
   })
 
   const { data: slaAlerts, isLoading: slaLoading } = useQuery({
     queryKey: ['sla-alerts'],
     queryFn: fetchSlaAlerts,
+    staleTime: 3 * 60 * 1000,
     enabled: user.isInternal,
   })
 
